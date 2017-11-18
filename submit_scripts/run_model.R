@@ -19,7 +19,7 @@ submit_data <- read_csv(submit_data_file)[spnum, ]
 data_name <- submit_data[["data_name"]]
 spectra_id <- submit_data[["spectra_id"]]
 
-results_fname <- file.path(results_dir, paste(data_name, spectra_id, "rds"))
+results_fname <- file.path(results_dir, paste(data_name, spectra_id, "rds", sep = "."))
 
 message("Dataset: ", data_name)
 message("Spectra ID: ", spectra_id)
