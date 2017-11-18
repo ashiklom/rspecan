@@ -43,11 +43,6 @@ dat <- dat_sub %>%
 
 spectra <- dat2specmat(dat_full, "spectra", wave_rxp)
 str(spectra)
-stopifnot(
-  ncol(spectra) == nrow(dat),
-  !any(duplicated(colnames(spectra))),
-  !any(duplicated(dat$spectra_id))
-)
 
 wl <- getwl(spectra)
 if (FALSE) {
@@ -61,8 +56,6 @@ wl_keep <- wl_prospect & !wl_bad
 data_wl_inds <- which(wl_keep)
 wl_kept <- wl[wl_keep]
 prospect_wl_inds <- which(prospect_wl %in% wl_kept)
-
-stopifnot(length(data_wl_inds) == length(prospect_wl_inds))
 
 sp_good <- spectra[data_wl_inds, ]
 if (FALSE) {
@@ -81,6 +74,8 @@ datalist <- list(
   data_wl_inds = data_wl_inds,
   prospect_wl_inds = prospect_wl_inds
 )
+
+check_datalist(datalist)
 
 submit_df <- dat %>%
   filter(spectra_type == "reflectance") %>%

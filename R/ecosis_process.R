@@ -34,7 +34,8 @@ dat2specmat <- function(dat_full, spectra_colname,
     select(matches(wave_rxp)) %>%
     as.matrix() %>%
     t() %>%
-    "colnames<-"(spectra_id)
+    "colnames<-"(spectra_id) %>%
+    .[order(as.numeric(rownames(.))), ]
 }
 
 #' @export
