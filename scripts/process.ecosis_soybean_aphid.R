@@ -2,9 +2,9 @@ rm(list = ls())
 library(rspecan)
 sethere()
 
-data_name <- "ecosis_<DATANAME>"
-data_longname <- "DATA LONG NAME"
-ecosis_id <- "ID"
+data_name <- "ecosis_soybean_aphid"
+data_longname <- "Productivity and Characterization of Soybean Foliar Traits Under Aphid Pressure"
+ecosis_id <- "cdbb6b09-b481-4022-a0da-ad95a8b085d8"
 ecosis_file <- sprintf(
   "https://ecosis.org/package/export?package_id=%s&metadata=true",
   ecosis_id
@@ -14,7 +14,8 @@ message("Downloading data...")
 dat_raw <- read_csv(ecosis_file)
 message("Download complete!")
 
-dat_full <- dat_raw
+dat_full <- dat_raw %>%
+  mutate(spectra_id = sprintf("%s_%03d", data_name, SAMP_ID))
 
 ############################################################
 # Process spectra
@@ -47,8 +48,36 @@ dat_sub <- dat_full %>%
 dat <- dat_sub %>%
   transmute(
     data_name = !!data_name,
-    spectra_id = SOMETHING,
-    spectra_type = "reflectance"
+    spectra_id = spectra_id,
+    spectra_type = "reflectance",
+    carotenoids = CAROTENOIDS,
+    carotenoids_unit = "ug cm-2",
+    chlorophyll_a = CHL_a,
+    chlorophyll_a_unit = "ug cm-2",
+    chlorophyll_b = CHL_b,
+    chlorophyll_b_unit = "ug cm-2",
+    chlorophyll_total = chlorophyll_a + chlorophyll_b,
+    chlorophyll_total_unit = "ug cm-2",
+    collection_date = ISOdate(YYYY, MM, DD),
+    instrument = INSTRUMENT,
+    latitude = LATITUDE,
+    longitude = LONGITUDE,
+    sun_shade = recode(LEAF_HEIGHT, L = "shade", U = "sun"),
+    soy_stage = STAGE,
+    treatment_soy = TREAT,
+    LMA = gmm2_LMA,
+    LMA_unit = "g m-2",
+    Cmass = pct_CARBON,
+    Cmass_unit = "%",
+    cellulose = pct_CELLULOSE,
+    cellulose_unit = "%",
+    fiber = pct_FIBER,
+    fiber_unit = "%",
+    lignin = pct_LIGNIN,
+    lignin_unit = "%",
+    Nmass = pct_NITROGEN,
+    Nmass_unit = "%",
+    is_agriculture = TRUE
   )
 
 ############################################################

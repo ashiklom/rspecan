@@ -2,11 +2,11 @@ rm(list = ls())
 library(rspecan)
 sethere()
 
-data_name <- "ecosis_<DATANAME>"
-data_longname <- "DATA LONG NAME"
-ecosis_id <- "ID"
+data_name <- "ecosis_cornvarieties"
+data_longname <- "Spectral Characterization of Multiple Corn Varieties: West Madison Agricultural Station 2014"
+ecosis_id <- "c0e238ea-5b23-452c-bc40-f0cfe2c6f032"
 ecosis_file <- sprintf(
-  "https://ecosis.org/package/export?package_id=%s&metadata=true",
+  "https://ecosis.org/package/export?package_id=%s&filters=&metadata=true",
   ecosis_id
 )
 
@@ -14,7 +14,8 @@ message("Downloading data...")
 dat_raw <- read_csv(ecosis_file)
 message("Download complete!")
 
-dat_full <- dat_raw
+dat_full <- dat_raw %>%
+  mutate(spectra_id = sprintf("%s_%03d_%02d", data_name, ID, rep))
 
 ############################################################
 # Process spectra
@@ -47,8 +48,13 @@ dat_sub <- dat_full %>%
 dat <- dat_sub %>%
   transmute(
     data_name = !!data_name,
-    spectra_id = SOMETHING,
-    spectra_type = "reflectance"
+    spectra_id = spectra_id,
+    spectra_type = "reflectance",
+    USDA_code = "ZEMA",
+    variety = Variety,
+    latitude = 43.0617,
+    longitude = -89.532,
+    instrument = "ASD FieldSpec 3"
   )
 
 ############################################################

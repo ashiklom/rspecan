@@ -2,9 +2,9 @@ rm(list = ls())
 library(rspecan)
 sethere()
 
-data_name <- "ecosis_<DATANAME>"
-data_longname <- "DATA LONG NAME"
-ecosis_id <- "ID"
+data_name <- "ecosis_milkweed_stress"
+data_longname <- "Common Milkweed Leaf Responses to Water Stress and Elevated Temperature"
+ecosis_id <- "9425d5b2-7633-45b5-9c07-6ec3323499a0"
 ecosis_file <- sprintf(
   "https://ecosis.org/package/export?package_id=%s&metadata=true",
   ecosis_id
@@ -14,7 +14,8 @@ message("Downloading data...")
 dat_raw <- read_csv(ecosis_file)
 message("Download complete!")
 
-dat_full <- dat_raw
+dat_full <- dat_raw %>%
+  mutate(spectra_id = sprintf("%s_%03d_%02d", data_name, ID, rep_ID))
 
 ############################################################
 # Process spectra
@@ -47,8 +48,23 @@ dat_sub <- dat_full %>%
 dat <- dat_sub %>%
   transmute(
     data_name = !!data_name,
-    spectra_id = SOMETHING,
-    spectra_type = "reflectance"
+    spectra_id = spectra_id,
+    spectra_type = "reflectance",
+    USDA_code = "ASSY",
+    CN_ratio = `C:N`,
+    fiber = `Fiber (% dm)`,
+    fiber_unit = "%",
+    Cmass = `Leaf carbon content per leaf area`,
+    Cmass_unit = "%",
+    LMA = `Leaf mass per area`,
+    LMA_unit = "g m-2",
+    Nmass = `Leaf nitrogen content per leaf area (% dm)`,
+    Nmass_unit = "%",
+    lignin = `Lignin (% dm)`,
+    lignin_unit = "%",
+    Vcmax_area = `Vcmax`,
+    Vcmax_area_unit = "umol m-2 s-1",
+    treatment_water = recode(`Water treatment`, ww = "Well-watered", ws = "Water stressed")
   )
 
 ############################################################

@@ -28,6 +28,7 @@ col_process <- function(dat, ecosis_colnames = ecosis_colnames) {
 #' @export
 dat2specmat <- function(dat_full, spectra_colname,
                         wave_rxp = "^[[:digit:]]+$") {
+  stopifnot(spectra_colname %in% colnames(dat_full))
   spectra_id <- dat_full[[spectra_colname]]
   stopifnot(!any(duplicated(spectra_id)))
   dat_full %>%
