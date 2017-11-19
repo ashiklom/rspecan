@@ -16,8 +16,8 @@ stopifnot(
 )
 
 submit_data <- read_csv(submit_data_file)[spnum, ]
-data_name <- submit_data[["data_name"]]
-spectra_id <- submit_data[["spectra_id"]]
+data_name <- as.character(submit_data[["data_name"]])
+spectra_id <- as.character(submit_data[["spectra_id"]])
 
 results_fname <- file.path(results_dir, paste(data_name, spectra_id, "rds", sep = "."))
 
