@@ -25,6 +25,11 @@ run_inversion <- function(data_name, spectra_id, prospect_version = "D", ...) {
       pout <- prospect(param, prospect_version)[, 1]
       log10(1 / pout)
     }
+  } else if (metadata$spectra_type == "continuum-removed reflectance") {
+    rtm <- function(param) {
+      pout <- prospect(param, prospect_version)[, 1]
+      prospectr::continuumRemoval(pout, 400:2500)
+    }
   } else {
     stop("Unknown spectra type \"", metadata$spectra_type, "\"")
   }
