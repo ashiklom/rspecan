@@ -10,6 +10,7 @@ run_inversion <- function(data_name, spectra_id, prospect_version = "D", ...) {
   stopifnot(nrow(metadata) == 1)
 
   obs_raw <- datalist$spectra[datalist$data_wl_inds, spectra_id]
+  obs_raw[obs_raw < 0] <- NA
   miss <- is.na(obs_raw)
   observed <- obs_raw[!miss]
   prospect_ind <- datalist$prospect_wl_inds[!miss]
@@ -28,9 +29,11 @@ run_inversion <- function(data_name, spectra_id, prospect_version = "D", ...) {
     stop("Unknown spectra type \"", metadata$spectra_type, "\"")
   }
 
+  message("Testing model.")
   model <- function(params) rtm(params)[prospect_ind]
   test_mod <- model(defparam(paste0("prospect_", tolower(prospect_version))))
   stopifnot(length(test_mod) == length(observed))
+  message("Model test successful! Starting inversion.")
 
   prior <- prospect_bt_prior(prospect_version)
   invert_bt(
