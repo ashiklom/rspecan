@@ -9,7 +9,8 @@ Depends:
 Imports:
     here,
     BayesianTools,
-    PEcAn.assim.batch
+    PEcAn.assim.batch,
+    h5
 License: MIT
 Encoding: UTF-8
 LazyData: true
