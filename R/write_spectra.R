@@ -9,24 +9,27 @@
 #' @export
 write_spectra <- function(spectra, data_name, spectra_file, overwrite = FALSE) {
   rn <- rownames(spectra)
-  cn <- colnames(spectra)
+  spectra_ids <- colnames(spectra)
   stopifnot(
     is_spectra(spectra) || !is.null(rn),
-    !is.null(cn)
+    !is.null(spectra_ids),
+    !any(duplicated(spectra_ids))
   )
   if (is_spectra(spectra)) {
     wl <- wavelengths(spectra)
   } else if (!is.null(rn)) {
     wl <- as.numeric(rn)
   }
-  spectra_ids <- cn
   hfile <- h5::h5file(spectra_file)
   if (overwrite) {
     h5::h5unlink(hfile, data_name)
   }
-  hfile[data_name] <- spectra
-  h5::h5attr(hfile[data_name], "wavelengths") <- wl
-  h5::h5attr(hfile[data_name], "spectra_id") <- spectra_ids
+  data_spec <- paste0(data_name, "/spectra")
+  data_wl <- paste0(data_name, "/wavelengths")
+  data_id <- paste0(data_name, "/spectra_id")
+  hfile[data_spec] <- spectra
+  hfile[data_wl] <- wl
+  hfile[data_id] <- spectra_ids
   h5::h5close(hfile)
   invisible(spectra_file)
 }

@@ -18,6 +18,7 @@
 #' @param exact_wl Logical, whether or not to parse wavelength specially. See details.
 #' @param wl_range Numeric, length 2, indicating the minimum and maxiumum 
 #' wavelength to use. Ignored if `wavelength` is not `NULL`.
+#' @export
 read_spectra <- function(spectra_file, data_name, wavelength = NULL, spectra_id = NULL,
                          exact_wl = FALSE, wl_range = NULL) {
   if (length(data_name) > 1) {
@@ -35,9 +36,12 @@ read_spectra <- function(spectra_file, data_name, wavelength = NULL, spectra_id 
     return(do.call(cbind, spectra_list))
   }
   hfile <- h5::h5file(spectra_file)
-  hdata <- hfile[data_name]
-  ids <- h5::h5attr(hdata, "spectra_id")
-  wl <- h5::h5attr(hdata, "wavelengths")
+  data_spec <- paste0(data_name, "/spectra")
+  data_wl <- paste0(data_name, "/wavelengths")
+  data_id <- paste0(data_name, "/spectra_id")
+  ids <- hfile[data_id][]
+  wl <- hfile[data_wl][]
+  hdata <- hfile[data_spec]
   if (!is.null(wavelength)) {
     wl_ds <- deparse(substitute(wavelength))
     if (grepl(":", wl_ds) && !exact_wl) {
