@@ -1,0 +1,8 @@
+rmd_files: 
+  - index.Rmd
+  - 01_introduction.md
+  - 02_methods.Rmd
+  - 03_results.Rmd
+  - 04_discussion.md
+  - 05_conclusions.md
+book_filename: "shiklomanov_prospect.Rmd"
