@@ -2,9 +2,14 @@
 title: "Leaf optical properties shed light on foliar trait variability at individual to global scales"
 author:
   - Alexey Shiklomanov$^1$
-  - Shawn Serbin$^2$
-  - Michael Dietze$^3$
+  - Alan Di Vittorio$^2$
+  - Shawn Serbin$^3$
+  - Michael Dietze$^1$
 ---
+
+$^1$ Department of Earth & Environment, Boston University, Boston, MA, USA;
+$^2$ Climate and Ecosystem Sciences Division, Lawrence Berkeley National Laboratory, Berkeley, CA, USA;
+$^3$ Environmental & Climate Sciences Department, Brookhaven National Laboratory, Upton, NY, USA
 
 # Abstract
 
