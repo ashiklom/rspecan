@@ -1,30 +1,39 @@
 # Methods
 
+```{r setupmethods, echo = FALSE, message = FALSE, warning = FALSE}
+knitr::read_chunk(here::here("manuscript", "analysis.R"))
+```
+```{r setup, echo = FALSE, message = FALSE, warning = FALSE}
+```
+
 ## Data
 
 Data from this project were assembled from XX projects on leaf spectra and related foliar traits (Table \@ref(tab:datadescribe)).
 Most of these datasets are obtained directly from the ECOSIS spectral library (<https://ecosis.org/>)
-Collectively, these data are comprised of XX observations from XX species, and span a wide geographic and climatic range (Figure \@ref(fig:datamap)]).
+Collectively, these data are comprised of XX observations from XX species, and span a wide geographic and climatic range (Figure \@ref(fig:datamap)).
+
+(ref:datamap) Data map
+
+```{r datamap, fig.cap = "(ref:datamap)"}
+```
 
 ## Trait estimation via PROSPECT-D inversion
 
 The PROSPECT-D leaf radiative transfer model [@feret2017_prospectd] simulates leaf reflectance and transmittance for 400 to 2500 nm wavelengths at 1 nm increments as a function of seven foliar morphological and biochemical traits:
 The effective number of leaf mesophyll layers (unitless),
-total chlorophyll content per area ($$\mu~g cm^{-2}$$),
-total carotenoid content per area ($$\mu~g cm^{-2}$$),
-total anthocynanin content per area ($$\mu~g cm^{-2}$$),
+total chlorophyll content per area ($\mu~g cm^{-2}$),
+total carotenoid content per area ($\mu~g cm^{-2}$),
+total anthocynanin content per area ($\mu~g cm^{-2}$),
 total "brown pigment" content (arbitrary units),
-leaf water content per area ($$g cm^{-2}$$),
-and leaf dry matter content per area ($$g cm^{-2}$$).
-
-[NOTE: Using g m-2 gives whole numbers for the last two traits -- should I do that?]
+leaf water content per area ($g m^{-2}$),
+and leaf dry matter content per area ($g m^{-2}$).
 
 To estimate traits from leaf spectra, we generally followed the Bayesian RTM inversion approach of @shiklomanov2016_rse, except that we replaced the Metropolis-Hastings algorithm with a more efficient Differential Evolution algorithm with "snooker" update as implemented in the `BayesianTools` R package [@bayesiantools].
 Forward simulations and Bayesian inversion of PROSPECT are implemented in the R package `PEcAnRTM` [@shiklomanov2016_rse], which is open source and freely available at <https://github.com/pecanproject/pecan/modules/rtm>.
 Where leaf spectra extended beyond the 400 to 2500 nm wavelength range of the PROSPECT model, we used only the observations from 400 to 2500 nm.
 Where leaf spectra were sampled at a spectral resolution coarser than 1 nm or did not include all wavelengths simulated by PROSPECT, we subset the PROSPECT output in the likelihood function to match the observations.
 Where leaf spectra were sampled at a finer spectral resolution than 1 nm, or where wavelengths did not align at 1 nm intervals, we used cubic spline interpolation (default method in the R function `spline`) to align the spectra with PROSPECT output.
-Where leaf spectra were provided as "pseudo-absorbance" ($$1 - \log_{10}(Reflectance)$$) or continuum-removed reflectance, we added the corresponding transformation to the PROSPECT output in the likelihood calculation [for continuum-removed reflectance, we used the `continuumRemoval` function from the R package `prospectr`, @prospectr].
+Where leaf spectra were provided as "pseudo-absorbance" ($1 - \log_{10}(R)$) or continuum-removed reflectance, we added the corresponding transformation to the PROSPECT output in the likelihood calculation [for continuum-removed reflectance, we used the `continuumRemoval` function from the R package `prospectr`, @prospectr].
 
 ## Analysis
 

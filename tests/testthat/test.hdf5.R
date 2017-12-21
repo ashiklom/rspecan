@@ -20,7 +20,7 @@ test_that(
 
 sp_both <- read_spectra(spectra_file, c(dn1, dn2))
 sp_all <- read_spectra(spectra_file, dn1)
-sp_wl <- read_spectra(spectra_file, dn1, wavelength = 400:500)
+sp_wl <- read_spectra(spectra_file, dn1, wavelength = 400:700)
 ids <- colnames(testspec_ACRU)[c(1, 3, 5)]
 sp_id <- read_spectra(spectra_file, dn1, spectra_id = ids)
 suppressWarnings(.z <- file.remove(spectra_file))

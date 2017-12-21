@@ -10,7 +10,9 @@ Imports:
     here,
     BayesianTools,
     PEcAn.assim.batch,
-    h5
+    h5,
+    cowplot,
+    rgdal
 License: MIT
 Encoding: UTF-8
 LazyData: true

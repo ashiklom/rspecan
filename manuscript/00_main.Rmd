@@ -5,6 +5,7 @@ author:
   - Alan Di Vittorio$^2$
   - Shawn Serbin$^3$
   - Michael Dietze$^1$
+bibliography: "library.bib"
 ---
 
 $^1$ Department of Earth & Environment, Boston University, Boston, MA, USA;
