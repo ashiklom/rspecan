@@ -6,3 +6,4 @@ processed_data
 
 manuscript/_book
 manuscript/_bookdown_files
+**/*.html

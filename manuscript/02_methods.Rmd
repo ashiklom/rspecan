@@ -1,6 +1,6 @@
 # Methods
 
-```{r setupmethods, echo = FALSE, message = FALSE, warning = FALSE}
+```{r setupmethods, echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE}
 knitr::read_chunk(here::here("manuscript", "analysis.R"))
 ```
 ```{r setup, echo = FALSE, message = FALSE, warning = FALSE}

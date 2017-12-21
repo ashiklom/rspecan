@@ -1,0 +1,4 @@
+bookdown::html_document2:
+  toc: false
+  split_chapters: false
+  self_contained: true

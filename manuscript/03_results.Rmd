@@ -1,9 +1,12 @@
 # Results
 
-```{r setupresults, echo = FALSE, message = FALSE, warning = FALSE}
+```{r setupresults, echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE}
 knitr::read_chunk(here::here("manuscript", "analysis.R"))
 if (FALSE) {
-  bookdown::render_book(here::here("manuscript", "00_main.Rmd"), bookdown::html_book(toc = FALSE))
+  withr::with_dir(
+    here::here("manuscript"),
+    bookdown::render_book("00_main.Rmd")
+  )
 }
 ```
 
@@ -12,7 +15,7 @@ if (FALSE) {
 
 (ref:validation) Comparison of spectral estimates and measured values for chlorophyll, carotenoid, water, and dry matter contents.
 
-```{r validation, w = 15, h = 15, fig.cap = "(ref:validation)"}
+```{r validation, w = 25, h = 25, fig.cap = "(ref:validation)"}
 ```
 
 (ref:treatments) Effects of treatments on optical traits estimated from spectra.
