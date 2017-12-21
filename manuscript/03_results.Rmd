@@ -1,7 +1,9 @@
 # Results
 
 ```{r setupresults, echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE}
-knitr::read_chunk(here::here("manuscript", "analysis.R"))
+knitr::read_chunk(here::here("manuscript", "setup.R"))
+knitr::read_chunk(here::here("manuscript", "validation.R"))
+knitr::read_chunk(here::here("manuscript", "treatments.R"))
 if (FALSE) {
   withr::with_dir(
     here::here("manuscript"),
