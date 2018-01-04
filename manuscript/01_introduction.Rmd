@@ -31,7 +31,7 @@ Leaf dry matter content is related to...[CITE].
 Collectively, these traits can be used to simulate leaf reflectance and transmittance using the PROSPECT leaf radiative transfer model [@jacquemoud1990_prospect; @feret2008_prospect; @feret2017_prospectd].
 PROSPECT has been used extensively for the simulation of leaf and (combined with canopy models) canopy reflectance [CITE].
 PROSPECT has also been used to estimate leaf spectral characteristics through spectral inversion [CITE].
-Compared to alternative approaches for estimating leaf properties from spectra, including spectral indices [CITE] and partial least squares regression (PLSR), PROSPECT inversion offers the following advantages.
+Compared to alternative approaches for estimating leaf properties from spectra, including spectral indices [CITE] and partial least squares regression (PLSR) [e.g. @barnes_2017_beyond], PROSPECT inversion offers the following advantages.
 First, RTM inversion can be applied to virtually any instrument, because the spectra simulated by RTMs can then be downsampled to any spectral resolution based on the spectral response curve of the corresponding instrument.
 Combined with Bayesian algorithms, this allows RTM inversion to account for the additional uncertainties associated with collecting spectra using instruments of various resolutions [@shiklomanov2016_rse].
 Second, the ability of RTMs to forward-simulate vegetation-light interactions makes them valuable to other applications, such as modeling leaf absorbance for photosynthesis and for improving representations of energy balance in terrestrial biosphere models [CITE: Fisher?].
