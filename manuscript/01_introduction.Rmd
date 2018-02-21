@@ -21,6 +21,11 @@ Remote sensing is emerging as a powerful method for mapping and monitoring plant
 Numerous studies have demonstrated the success of mapping traits from unmanned aerial systems [CITE], airborne platforms [@schneider2017_mapping; @asner2017_scale; @singh2015_istraits], and even satellites [CITE: Houborg; others].
 At the scale of leaves and individual plant canopies, spectral measurements with portable spectroradiometers provide fast and non-destructive assessments of foliar traits  that facilitate upscaling of measurements and tracking of physiological responses [CITE: Serbin; Martin; Penuelas; others].
 
+- Applications of leaf spectra (and general leaf spectra puff piece) [@cavenderbares_2017_harnessing].
+    - Importance of field spectral measurements to improve interpretation of remote sensing spectra
+- Imaging spectroscopy related to traits and phylogeny [@mcmanus_2016_phylogenetic]
+- IS to study plant secondary metabolites [@couture_2016_spectroscopic]
+
 In this study, we focus on six foliar "optical" traits related to plant ecophysiology and spectral properties.
 The effective number of leaf mesophyll layers (or one more than the effective number of intracellular air spaces)...[CITE].
 Total leaf chlorophyll content (the sum of chlorophyll $a$ and $b$) is relevant to photosynthesis and APAR [CITE: Croft, others].
