@@ -8,8 +8,6 @@ read_spectra(spectra_file, data_name, wavelength = NULL, spectra_id = NULL,
   exact_wl = FALSE, wl_range = NULL)
 }
 \arguments{
-\item{spectra_file}{File name for HDF5 file}
-
 \item{data_name}{Name of data in HDF5 file. If multiple data names are 
 passed, spectra are combined via `cbind.spectra`}
 

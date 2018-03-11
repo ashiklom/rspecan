@@ -10,7 +10,7 @@ Imports:
     here,
     BayesianTools,
     PEcAn.assim.batch,
-    h5,
+    hdf5r,
     cowplot,
     rgdal
 License: MIT

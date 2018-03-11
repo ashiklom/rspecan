@@ -7,7 +7,7 @@
 #' @param overwrite Delete dataset `data_name` in HDF5 file before writing.
 #' @return Spectra file name (invisibly)
 #' @export
-write_spectra <- function(spectra, data_name, spectra_file, overwrite = FALSE) {
+write_spectra_old <- function(spectra, data_name, spectra_file, overwrite = FALSE) {
   rn <- rownames(spectra)
   spectra_ids <- colnames(spectra)
   stopifnot(
