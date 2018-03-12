@@ -55,3 +55,11 @@ list2hdf <- function(hfile, l, overwrite = FALSE) {
   }
   hfile
 }
+
+#' Sanitize data for HDF5 storage
+#'
+#' @param data `data.frame` or `list` to sanitize
+sanitize_df <- function(data) {
+  data %>%
+    mutate_if(is.character, ~stringi::stri_trans_general(., "latin-ascii"))
+}

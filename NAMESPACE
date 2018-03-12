@@ -2,6 +2,7 @@
 
 export(col_process)
 export(col_rename)
+export(create_project)
 export(dat2specmat)
 export(getwl)
 export(h5_dataset)
@@ -15,4 +16,5 @@ export(run_inversion)
 export(sethere)
 export(write_spectra_old)
 export(write_submit_file)
+importFrom(assertthat,"%has_name%")
 importFrom(here,here)

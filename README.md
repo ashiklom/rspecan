@@ -1,6 +1,79 @@
 # Dataset organization
 
-TODO: Describe it!
+All of the data for this project is stored in the `extdata/specdb.h5` file.
+The file has the following general structure:
+
+```
+specdb.h5:
+    /<project_code*>
+        /info
+            /short_name
+            /long_name
+            /description
+            /citation
+        /spectra
+            /<observation_id*>
+                /spectra
+                /spectra_type
+                /wavelength
+        /metadata
+            /observation_id
+            /species_code
+```
+
+# Working with the dataset
+
+## Use cases
+
+Grab data from a specific project
+
+## General overview
+
+Use the following functions to add data to an HDF5 file:
+
+- `r2hdf(obj, h5)` -- Write a named R list (or `data.frame`) to an HDF5 file
+    - `r2hdf.list`
+    - `r2hdf.data.frame`
+- `spectra2hdf(spectra, h5, type = "reflectance")` -- Add `spectra` to an HDF5 file
+
+Use the following functions to read data from an HDF5 file:
+
+
+- `select_project(h5, ...)` -- Chose projects
+- `select_`
+- `select(h5, ...)` -- Choose objects from within HDF5 using standard or non-standard evaluation. Analogous to `dplyr::select`.
+    - `select.h5`
+- `filter(h5, ...)` -- Index based on conditions
+    - 
+
+--------------------------------
+
+All of the spectral data are stored in HDF5 format, in the file `data/spectra.h5`.
+Metadata for this file are stored in the `data/metadata.csv`,
+and additional information about each column in this table is in `data/metadata_info.yml`.
+Each file is described in more detail below.
+
+## Spectral data (`spectra.h5`)
+
+The `spectra.h5` file has the following organization:
+
+- **Top level**: Project code, matching `project_code` field in `metadata`
+- **Second level**: Spectra type -- one of the following:
+    - `reflectance`
+    - `transmittance`
+    - `pseudo-absorbance` -- 1 / log10(reflectance)
+    - `continuum-removed reflectance` -- see `prospectr::continuumRemoval` function
+- **Third level**: Spectral data
+    - `spectra` -- matrix of spectra, wavelength x observation
+    - `wavelength` -- numeric vector of wavelengths (_must_ match `nrow(spectra)`)
+    - `spectra_id` -- character vector of spectra IDs (_must_ match `ncol(spectra)`). Unique to each spectrum.
+    - `observation_id` -- character vector of observation IDs. Each `spectra_id` will only have one `observation_id`, but an `observation_id` can have multiple `spectra_id`s. Each `observation_id` has a unique row in the metadata table.
+
+## Metadata (`metadata.csv`)
+
+The `metadata.csv` file is a single, flat file containing metadata for each spectrum.
+Each row corresponds to a single `observation_id` in the `spectra.h5` file.
+
 
 # Datasets processed
 

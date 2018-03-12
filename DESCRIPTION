@@ -5,14 +5,18 @@ Authors@R: person("Alexey", "Shiklomanov", email = "ashiklom@bu.edu", role = c("
 Description: Organize, store, and analyze leaf reflectance spectra.
 Depends:
     tidyverse,
-    PEcAnRTM
+    PEcAnRTM,
+    udunits2
 Imports:
     here,
     BayesianTools,
     PEcAn.assim.batch,
     hdf5r,
     cowplot,
+    assertthat,
     rgdal
+Suggests:
+    testthat
 License: MIT
 Encoding: UTF-8
 LazyData: true
