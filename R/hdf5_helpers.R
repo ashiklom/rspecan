@@ -50,6 +50,9 @@ list2hdf <- function(hfile, l, overwrite = FALSE) {
       h2 <- h5_group(hfile, namei, overwrite = overwrite)
       .h <- list2hdf(h2, li, overwrite = overwrite)
     } else {
+      if (is.data.frame(li)) {
+        li <- sanitize_df(li)
+      }
       h2 <- h5_dataset(hfile, namei, li, overwrite = overwrite)
     }
   }
@@ -58,8 +61,55 @@ list2hdf <- function(hfile, l, overwrite = FALSE) {
 
 #' Sanitize data for HDF5 storage
 #'
-#' @param data `data.frame` or `list` to sanitize
+#' @param data `data.frame` to sanitize
+#' @return Sanitized `data.frame`
 sanitize_df <- function(data) {
   data %>%
     mutate_if(is.character, ~stringi::stri_trans_general(., "latin-ascii"))
+}
+
+#' [base::file.path] analog for HDF5
+h5_path <- function(...) {
+  paste(..., sep = "/")
+}
+
+#' Check if object is an H5File
+#'
+#' @param x Object to check
+#' @return Logical
+#' @export
+is.H5File <- function(x) {
+  inherits(x, "H5File")
+}
+
+assertthat::on_failure(is.H5File) <- function(call, env) {
+  paste0(deparse(call$x), " is not class H5File.")
+}
+
+#' Coerce object into H5File
+#'
+#' For characters, open an H5File object. For `H5File`s, return the object 
+#' itself.
+#'
+#' @param x Object to coerce to H5File
+#' @return H5File object
+#' @export
+as.H5File <- function(x, ...) {
+  UseMethod("as.H5File")
+}
+
+#' @rdname as.H5File
+#' @export
+as.H5File.character <- function(x, ...) {
+  assertthat::assert_that(
+    assertthat::is.string(x),
+    hdf5r::is.h5file(x)
+  )
+  hdf5r::H5File$new(x, ...)
+}
+
+#' @rdname as.H5File
+#' @export
+as.H5File.H5File <- function(x, ...) {
+  x
 }

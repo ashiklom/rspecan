@@ -3,6 +3,7 @@
 .RData
 raw_data
 processed_data
+.scratch.*
 
 manuscript/_book
 manuscript/_bookdown_files

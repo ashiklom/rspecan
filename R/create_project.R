@@ -25,7 +25,7 @@ create_project <- function(specdb_file,
   input_list <- list(
     info = project_info,
     spectra = spectra2list(spectra, colnames(spectra)),
-    metadata = sanitize_df(metadata)
+    metadata = metadata
   )
 
   project <- h5_group(specdb, project_code, overwrite) %>%

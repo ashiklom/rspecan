@@ -7,7 +7,10 @@
 sanitize_df(data)
 }
 \arguments{
-\item{data}{`data.frame` or `list` to sanitize}
+\item{data}{`data.frame` to sanitize}
+}
+\value{
+Sanitized `data.frame`
 }
 \description{
 Sanitize data for HDF5 storage
