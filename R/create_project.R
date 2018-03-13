@@ -19,16 +19,17 @@ create_project <- function(specdb_file,
     all(colnames(spectra) %in% metadata$observation_id)
   )
 
-  specdb <- hdf5r::H5File$new(specdb_file)
-  on.exit(specdb$close_all())
-  
   input_list <- list(
     info = project_info,
     spectra = spectra2list(spectra, colnames(spectra)),
     metadata = metadata
   )
 
-  project <- h5_group(specdb, project_code, overwrite) %>%
+  specdb <- h5_open(specdb_file)
+  on.exit(specdb$close_all())
+
+  hf <- h5_group(specdb, project_code, overwrite) %>%
     list2hdf(input_list, overwrite)
+
   invisible(TRUE)
 }

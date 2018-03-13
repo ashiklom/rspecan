@@ -25,7 +25,11 @@ load_spectra <- function(project,
     assertthat::is.string(observation_id)
   )
 
-  specdb <- as.H5File(specdb)
+  if (is.character(specdb)) {
+    specdb <- h5_open(specdb)
+    on.exit(specdb$close_all())
+  }
+
   h5_obs <- specdb[[h5_path(project, "spectra", observation_id)]]
 
   waves <- h5_obs[["wavelengths"]][]

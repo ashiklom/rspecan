@@ -2,19 +2,22 @@
 % Please edit documentation in R/hdf5_helpers.R
 \name{h5_group}
 \alias{h5_group}
+\alias{h5_group.H5RefClass}
+\alias{h5_group.character}
 \title{Open a group, or create it if it doesn't exist}
 \usage{
 h5_group(hfile, group, overwrite = FALSE)
+
+\method{h5_group}{H5RefClass}(hfile, group, overwrite)
+
+\method{h5_group}{character}(hfile, group, overwrite = FALSE)
 }
 \arguments{
-\item{hfile}{HDF5 file object (see [hdf5r::H5File]).}
+\item{hfile}{H5File object, or path to HDF5 file.}
 
 \item{group}{Name of group, as character}
 
 \item{overwrite}{Logical. If `TRUE`, unlink the target first.}
-}
-\value{
-H5File object of the resulting group
 }
 \description{
 Open a group, or create it if it doesn't exist

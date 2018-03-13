@@ -2,12 +2,16 @@
 % Please edit documentation in R/hdf5_helpers.R
 \name{h5_dataset}
 \alias{h5_dataset}
+\alias{h5_dataset.H5RefClass}
 \title{Open a dataset, or create it if it doesn't exist}
 \usage{
 h5_dataset(hfile, dataset, data = NULL, overwrite = FALSE)
+
+\method{h5_dataset}{H5RefClass}(hfile, dataset, data = NULL,
+  overwrite = FALSE)
 }
 \arguments{
-\item{hfile}{HDF5 file object (see [hdf5r::H5File]).}
+\item{hfile}{H5File object, or path to HDF5 file.}
 
 \item{dataset}{Name of target dataset, as character}
 
