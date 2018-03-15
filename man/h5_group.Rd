@@ -8,7 +8,7 @@
 \usage{
 h5_group(hfile, group, overwrite = FALSE)
 
-\method{h5_group}{H5RefClass}(hfile, group, overwrite)
+\method{h5_group}{H5RefClass}(hfile, group, overwrite = FALSE)
 
 \method{h5_group}{character}(hfile, group, overwrite = FALSE)
 }

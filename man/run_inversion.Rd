@@ -4,7 +4,7 @@
 \alias{run_inversion}
 \title{Invert a spectrum from the spectra database}
 \usage{
-run_inversion(project, observation_id, specdb, prospect_version,
+run_inversion(project, observation_id, specdb_file, prospect_version,
   spectra_types = c("R", "PA", "CRR"), overwrite = FALSE, ...)
 }
 \arguments{
@@ -12,8 +12,7 @@ run_inversion(project, observation_id, specdb, prospect_version,
 
 \item{observation_id}{Observation ID of spectra to load}
 
-\item{specdb}{H5File object containing spectra database, or character path 
-to containing file}
+\item{specdb_file}{Path to spectra file}
 
 \item{prospect_version}{Version of PROSPECT to use. Default is "5B".}
 
