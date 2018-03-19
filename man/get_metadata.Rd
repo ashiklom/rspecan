@@ -4,18 +4,19 @@
 \alias{get_metadata}
 \title{Retrieve all metadata for given project}
 \usage{
-get_metadata(specdb, projects = NULL)
+get_metadata(specdb, projects = NULL, include_metadata = TRUE)
 }
 \arguments{
-\item{specdb}{H5File object containing spectra database, or character path 
-to containing file}
+\item{specdb}{Path to spectra database}
 
 \item{projects}{Character vector of projects for which to load metadata. If 
 `NULL` (default), load all projects.}
+
+\item{include_metadata}{Logical. If `TRUE`, include a list column of metadata}
 }
 \value{
 Metadata for specified projects, as `tibble`
 }
 \description{
-Retrieve all metadata for given project
+Currently, all metadata is stored in one large list in the object root
 }

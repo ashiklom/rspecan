@@ -4,16 +4,15 @@
 \alias{load_spectra}
 \title{Load single set of observed spectra from HDF5 file}
 \usage{
-load_spectra(project, observation_id, specdb, wl_min = NULL, wl_max = NULL,
-  wavelengths = NULL, spectra_types = NULL)
+load_spectra(project_code, observation_id, specdb, wl_min = NULL,
+  wl_max = NULL, wavelengths = NULL, spectra_types = NULL)
 }
 \arguments{
-\item{project}{Character string of project code from which to load spectra}
+\item{project_code}{Character string of project code from which to load spectra}
 
 \item{observation_id}{Observation ID of spectra to load}
 
-\item{specdb}{H5File object containing spectra database, or character path 
-to containing file}
+\item{specdb}{Path to spectra database}
 
 \item{wl_min}{Minimum wavelength to retrieve, or `NULL` (default) for no minimum}
 

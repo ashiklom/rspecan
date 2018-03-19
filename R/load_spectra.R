@@ -1,9 +1,8 @@
 #' Load single set of observed spectra from HDF5 file
 #'
-#' @param project Character string of project code from which to load spectra
+#' @param project_code Character string of project code from which to load spectra
 #' @param observation_id Observation ID of spectra to load
-#' @param specdb H5File object containing spectra database, or character path 
-#' to containing file
+#' @param specdb Path to spectra database
 #' @param wl_min Minimum wavelength to retrieve, or `NULL` (default) for no minimum
 #' @param wl_max Maximum wavelength to retrieve, or `NULL` (default) for no maximum
 #' @param wavelengths Wavelengths to which to [PEcAnRTM::resample] results, or 
@@ -12,7 +11,7 @@
 #' types. See [PEcAnRTM::valid_spectra_types].
 #' @return [PEcAnRTM::spectra] object
 #' @export
-load_spectra <- function(project,
+load_spectra <- function(project_code,
                          observation_id,
                          specdb,
                          wl_min = NULL,
@@ -21,18 +20,20 @@ load_spectra <- function(project,
                          spectra_types = NULL) {
 
   assertthat::assert_that(
-    assertthat::is.string(project),
+    assertthat::is.string(project_code),
     assertthat::is.string(observation_id)
   )
 
-  if (is.character(specdb)) {
-    specdb <- h5_open(specdb)
-    on.exit(specdb$close_all())
-  }
+  spectra_path <- fs::path(specdb, project_code, "spectra", observation_id, ext = "csvy")
+  stopifnot(fs::file_exists(spectra_path))
 
-  h5_obs <- specdb[[h5_path(project, "spectra", observation_id)]]
+  spec <- read_spectra(spectra_path)
 
-  waves <- h5_obs[["wavelengths"]][]
+  types <- PEcAnRTM::spectra_types(spec)
+  itypes <- which(types %in% spectra_types)
+  spec <- spec[, itypes]
+
+  waves <- PEcAnRTM::wavelengths(spec)
   lwaves <- rep(TRUE, length(waves))
   if (!is.null(wl_min)) {
     assertthat::assert_that(
@@ -47,8 +48,9 @@ load_spectra <- function(project,
     lwaves <- lwaves & waves <= wl_max
   }
   iwaves <- which(lwaves)
+  assertthat::assert_that(length(iwaves) > 0)
 
-  types <- h5_obs[["spectra_types"]][]
+  types <- PEcAnRTM::spectra_types(spec)
   if (!is.null(spectra_types)) {
     assertthat::assert_that(is.character(spectra_types))
     itypes <- which(types %in% spectra_types)
@@ -56,35 +58,63 @@ load_spectra <- function(project,
     itypes <- seq_along(types)
   }
 
-  result <- PEcAnRTM::spectra(
-    h5_obs[["spectra"]][iwaves, itypes],
-    wavelengths = waves[iwaves],
-    spectra_types = types[itypes]
-  )
-  colnames(result) <- rep(observation_id, ncol(result))
-  
+  assertthat::assert_that(length(itypes) > 0)
+
+  spec <- spec[iwaves, itypes]
+
   if (!is.null(wavelengths)) {
-    result <- PEcAnRTM::resample(result, wavelengths)
+    spec <- PEcAnRTM::resample(spec, wavelengths)
   }
 
-  result
+  spec
+}
+
+#' Read spectra from CSVY file
+#'
+#' @param filename Target file to read
+#' @param ... Additional arguments to [metar::read_csvy]
+#' @return Object of class `spectra`
+#' @export
+read_spectra <- function(filename, ...) {
+  spec_tbl <- metar::read_csvy(filename)
+  spec_mat <- spec_tbl %>%
+    dplyr::select(-wavelengths) %>%
+    as.matrix()
+  waves <- spec_tbl[["wavelengths"]]
+  spectypes <- attr(spec_tbl, "spectra_types")
+  PEcAnRTM::spectra(spec_mat, waves, spectypes)
 }
 
 #' Retrieve all metadata for given project
 #'
+#' Currently, all metadata is stored in one large list in the object root
+#'
 #' @param projects Character vector of projects for which to load metadata. If 
 #' `NULL` (default), load all projects.
+#' @param include_metadata Logical. If `TRUE`, include a list column of metadata
 #' @inheritParams load_spectra
 #' @return Metadata for specified projects, as `tibble`
 #' @export
-get_metadata <- function(specdb, projects = NULL) {
-  specdb <- as.H5File(specdb)
+get_metadata <- function(specdb, projects = NULL, include_metadata = TRUE) {
   if (is.null(projects)) {
-    projects <- specdb$names
+    projects <- fs::dir_ls(specdb, type = "dir") %>% fs::path_file() %>% as.character()
   }
-  result <- tibble::tibble(project_code = projects) %>%
-    dplyr::mutate(metadata = purrr::map(project_code, ~specdb[[.]][["metadata"]][])) %>%
-    tidyr::unnest(metadata)
+
+  all_df <- tibble::tibble(project_code = projects) %>%
+    dplyr::mutate(data = purrr::map(
+      project_code,
+      ~metar::read_csvy(fs::path(specdb, project_code, "metadata.csvy")))
+    )
+  
+  meta <- purrr::map(all_df$data, metar::get_all_metadata) %>%
+    setNames(projects)
+
+  out <- tidyr::unnest(all_df, data)
+
+  if (include_metadata) {
+    out <- metar::add_metadata(out, !!!meta)
+  }
+  out
 }
 
 #' Add spectra column to metadata
@@ -96,7 +126,6 @@ get_metadata <- function(specdb, projects = NULL) {
 #' @return `data`, with `spectra` as a list column of [PEcAnRTM::spectra] objects.
 #' @export
 add_spectra_column <- function(data, specdb, ...) {
-  specdb <- as.H5File(specdb)
   assertthat::assert_that(
     is.data.frame(data),
     data %has_name% "project_code",
@@ -108,7 +137,7 @@ add_spectra_column <- function(data, specdb, ...) {
         project_code,
         observation_id,
         load_spectra,
-        specdb = as.H5File(specdb), ...)
+        specdb = specdb, ...)
     )
 }
 

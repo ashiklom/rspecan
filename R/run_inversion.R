@@ -9,80 +9,136 @@
 #' @export
 run_inversion <- function(project,
                           observation_id,
-                          specdb_file,
+                          specdb,
                           prospect_version,
                           spectra_types = c("R", "PA", "CRR"),
                           overwrite = FALSE,
                           ...) {
 
-  h5_group2 <- purrr::partial(h5_group, hfile = specdb_file)
+  invert_path <- fs::path(specdb, project, "inversion", observation_id,
+                          paste0("prospect_", prospect_version))
+  fs::dir_create(invert_path, recursive = TRUE)
 
-  h5_invert <- specdb_file %>%
-    h5_group(group = h5_path(project, "inversion"), overwrite = FALSE) %>%
-    h5_path(., observation_id) %>%
-    h5_group2(group = ., overwrite = FALSE) %>%
-    h5_path(., paste0("prospect_", prospect_version)) %>%
-    h5_group2(group = ., overwrite = TRUE)
+  curr_status <- get_inversion_status(specdb, project, observation_id, prospect_version)
 
-  if (h5_exists(specdb_file, h5_invert, "status") &&
-      h5_get_data(specdb_file, h5_invert, "status") != "not_converged") {
+  if (overwrite) {
+    message("Overwriting run, whose previous status was: ", curr_status)
+    set_inversion_status(specdb, project, observation_id, prospect_version, "none")
+    curr_status <- "none"
+  }
+
+  if (!curr_status %in% c("none", "not_converged")) {
     stop(
-      "This run currently has a status: ", h5_invert[["status"]][],
+      "This run currently has status: ", curr_status,
       ". If you want to start a new run anyway, set 'overwrite = TRUE'."
     )
   }
 
-  observed <- load_spectra(project, observation_id, specdb_file,
+  observed <- load_spectra(project, observation_id, specdb,
                            spectra_types = spectra_types)
 
-  set_inversion_status(specdb_file, h5_invert, "running")
+  info_file <- fs::path(invert_path, "info")
+  if (interactive()) info_file <- ""
+  options(inversion_log = info_file)
 
-  interrupted <- tryCatch({
-    samples <- PEcAnRTM::invert_fieldspec(observed, prospect_version = prospect_version, ...)
+  write_info("start_time: {Sys.time()}", append = FALSE)
+  write_info("project_code: {project}")
+  write_info("observation_id: {observation_id}")
+  write_info("prospect_version: {prospect_version}")
+  write_info("input_spectra_types: {paste(spectra_types, collapse = ' ')}")
+  #spec_types <- PEcAnRTM::spectra_types(observed) %>% paste(collapse = ' ')
+  #write_info("observed_spectra_types: {spec_types}")
+  #waves <- PEcAnRTM::wavelengths(observed)
+  #write_info("observed_ncol: {ncol(observed)}")
+  #write_info("observed_wl_min: {min(waves)}")
+  #write_info("observed_wl_max: {max(waves)}")
+  #write_info("observed_nwl: {nrow(observed)}")
+  write_info("hostname: {system2('hostname', stdout = TRUE)}")
+  write_info("run_directory: {getwd()}")
+
+  tryCatch({
+    set_inversion_status(specdb, project, observation_id, prospect_version, "running")
+    samples <- PEcAnRTM::invert_fieldspec(observed, prospect_version = prospect_version)
     FALSE
   }, interrupt = function(e) {
-    message("Caught user interrupt.")
-    TRUE
+    message("Caught user interrupt. Setting inversion status to `none`")
+    set_inversion_status(specdb, project, observation_id, prospect_version, "none")
+    write_info("end_time_sampling: {Sys.time()}")
+    write_info("status: Run terminated via user interrupt")
+    stop("Terminating execution because of user interrupt.")
   }
   )
 
-  if (interrupted) {
-    message("User interrupt. Deleting run link.")
-    specdb$link_delete(h5_path(project, "inversion", observation_id))
-    specdb$close_all()
-    stop("Terminating because of user interrupt.")
-  }
+  write_info("end_time_sampling: {Sys.time()}")
 
   samples_matrix <- BayesianTools::getSample(samples, parametersOnly = FALSE)
-  h5_invert[["samples"]] <- samples_matrix
+  saveRDS(samples_matrix, fs::path(invert_path, "samples.rds"))
 
   samples_coda <- BayesianTools::getSample(samples, coda = TRUE)
-  samples_burned <- PEcAn.assim.batch::autoburnin(samples_coda, TRUE)
+  samples_burned <- PEcAn.assim.batch::autoburnin(samples_coda, TRUE, method = "gelman.plot")
 
   if (samples_burned$burnin == 1) {
     message("Run did not converge. Marking status as 'not_converged'.")
-    set_inversion_status(h5_invert, "not_converged")
+    set_inversion_status(specdb, project, observation_id, prospect_version, "not_converged")
+    #write_info("status: Not converged after {nrow(samples_matrix)} iterations")
   } else {
     message("Run converged. Marking status as 'complete'.")
-    set_inversion_status(h5_invert, "complete")
+    set_inversion_status(specdb, project, observation_id, prospect_version, "complete")
+    #write_info("status: Converged after {nrow(samples_matrix)} iterations")
+    #write_info("burnin: {samples_burned$burnin}")
     param_summary <- summary(samples_burned$samples)[c("statistics", "quantiles")] %>%
       purrr::map(tibble::as_tibble, rownames = "parameter") %>%
-      purrr::reduce(dplyr::left_join, by = "parameter")
-    h5_invert[["results"]] <- param_summary
-    h5_invert[["burnin"]] <- samples_burned$burnin
+      purrr::reduce(dplyr::left_join, by = "parameter") %>%
+      metar::add_metadata(
+        project_code = project,
+        observation_id = observation_id,
+        prospect_version = prospect_version,
+        spectra_types = spectra_types
+      )
+    metar::write_csvy(param_summary, fs::path(invert_path, "results.csvy"))
   }
 
   message("Inversion complete!")
   invisible(TRUE)
 }
 
-set_inversion_status <- function(hfile, path, status) {
-  status_levels <- c("running", "complete", "not_converged")
+#' Set and retrieve the status of an inversion
+#'
+#' @inheritParams run_inversion
+#' @param status Character indicating status
+#' @export
+set_inversion_status <- function(specdb, project, observation_id, prospect_version, status) {
+  statusfile <- fs::path(specdb, project, "inversion", observation_id, "status")
+  status_levels <- c("running", "complete", "not_converged", "none")
   assertthat::assert_that(
     assertthat::is.string(status),
     status %in% status_levels
   )
-  status_fac <- factor(status, status_levels)
-  h5_dataset(hfile, h5_path(path, "status"), status_fac, overwrite = TRUE)
+  if (status == "none") {
+    file.remove(statusfile, showWarnings = FALSE)
+  } else {
+    writeLines(status, statusfile)
+  }
   invisible(TRUE)
+}
+
+#' @rdname get_inversion_status
+#' @export
+get_inversion_status <- function(specdb, project, observation_id, prospect_version) {
+  statusfile <- fs::path(specdb, project, "inversion", observation_id, "status")
+  if (!fs::file_exists(statusfile)) {
+    return("none")
+  }
+  readLines(statusfile)
+}
+
+#' Write log info about a run
+#'
+#' @param string A string, to be passed to [glue::glue]
+#' @param file Output file. Defaults to `getOption("inversion_log")` or, if that's unset, the R console
+#' @inheritParams base::cat
+#' ... Additional arguments to [base::cat]
+write_info <- function(string, file = getOption("inversion_log"), append = TRUE, ...) {
+  if (is.null(file)) file <- ""
+  cat(glue::glue(string), "\n", file = file, append = append, ...)
 }

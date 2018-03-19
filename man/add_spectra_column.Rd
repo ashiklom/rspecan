@@ -10,8 +10,7 @@ add_spectra_column(data, specdb, ...)
 \item{data}{`data.frame` to which to add spectra. Must include columns 
 `project_code` and `observation_id`}
 
-\item{specdb}{H5File object containing spectra database, or character path 
-to containing file}
+\item{specdb}{Path to spectra database}
 
 \item{...}{Additional arguments to [load_spectra]}
 }

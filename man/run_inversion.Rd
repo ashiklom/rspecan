@@ -4,15 +4,13 @@
 \alias{run_inversion}
 \title{Invert a spectrum from the spectra database}
 \usage{
-run_inversion(project, observation_id, specdb_file, prospect_version,
+run_inversion(project, observation_id, specdb, prospect_version,
   spectra_types = c("R", "PA", "CRR"), overwrite = FALSE, ...)
 }
 \arguments{
-\item{project}{Character string of project code from which to load spectra}
-
 \item{observation_id}{Observation ID of spectra to load}
 
-\item{specdb_file}{Path to spectra file}
+\item{specdb}{Path to spectra database}
 
 \item{prospect_version}{Version of PROSPECT to use. Default is "5B".}
 
@@ -23,6 +21,8 @@ types. See [PEcAnRTM::valid_spectra_types].}
 this run. Default = `FALSE.`}
 
 \item{...}{Additional parameters to [PEcAnRTM::invert_fieldspec]}
+
+\item{specdb_file}{Path to spectra file}
 }
 \description{
 Invert a spectrum from the spectra database
