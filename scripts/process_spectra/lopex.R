@@ -1,29 +1,38 @@
 library(rspecan)
-library(here)
+library(tidyverse)
+library(udunits2)
 
-if (!exists("overwrite")) overwrite <- FALSE
+config_file <- here("scripts/process_spectra/config.R")
+stopifnot(file.exists(config_file))
+source(config_file)
 
 data_path <- "~/Dropbox/NASA_TE_PEcAn-RTM_Project/Data/curated-leafspec/data/lopex"
 project_code <- "lopex"
-specdb_file <- "test.h5"
 
-project_info <- list(
+project_metadata <- list(
+  project_code = project_code,
   short_name = "LOPEX",
   long_name = "Leaf Optical Properties Experiment (1993)",
-  URL = "http://opticleaf.ipgp.fr/index.php?page=database"
+  URL = "http://opticleaf.ipgp.fr/index.php?page=database",
+  site_description = "Joint Research Center, Ispra, Italy",
+  spectra_methods = list(
+    apparatus = "integrating sphere",
+    calibration = "spectralon ratio",
+    instrument = "perkin-elmer-l19",
+    comment = paste(
+      "For more details, see",
+      "http://teledetection.ipgp.jussieu.fr/opticleaf/lopex.htm#spectral"
+    )
+  )
 )
 
 common_metadata <- tibble(
   site_code = "ispra",
   plot_code = "ispra",
-  site_description = "Joint Research Center, Ispra, Italy",
   latitude = 45.803,
   longitude = 8.630,
   year = 1993,
   instrument_code = "perkin-elmer-l19",
-  apparatus = "integrating sphere",
-  calibration = "spectralon ratio",
-  method_comment = "See http://teledetection.ipgp.jussieu.fr/opticleaf/lopex.htm#spectral for more info",
   is_experiment = FALSE
 )
 
@@ -47,20 +56,15 @@ lopex_raw <- read_csv(chem_path) %>%
 
 lopex_traits <- lopex_raw %>%
   rename(
-    leaf_C_pct_mass = C_C,
-    leaf_H_pct_mass = C_H,
-    leaf_O_pct_mass = C_O,
-    leaf_N_pct_mass = C_N,
-    leaf_prospect_N = N
+    leaf_C_pct_mass = C_C, leaf_H_pct_mass = C_H, leaf_O_pct_mass = C_O,
+    leaf_N_pct_mass = C_N, leaf_prospect_N = N,
+    leaf_chla_per_area = C_a, leaf_chlb_per_area = C_b,
+    leaf_chltot_per_area = C_ab, leaf_cartot_per_area = C_car,
+    leaf_anth_per_area = C_anth,
+    leaf_mass_per_area = LMA, leaf_water_thickness = EWT,
+    leaf_thickness = LT, leaf_area = A
   ) %>%
   mutate(
-    leaf_chla_per_area = ud.convert(C_a, "ug cm-2", "kg m-2"),
-    leaf_chlb_per_area = ud.convert(C_b, "ug cm-2", "kg m-2"),
-    leaf_chltot_per_area = ud.convert(C_ab, "ug cm-2", "kg m-2"),
-    leaf_cartot_per_area = ud.convert(C_car, "ug cm-2", "kg m-2"),
-    leaf_anth_per_area = ud.convert(C_anth, "ug cm-2", "kg m-2"),
-    leaf_mass_per_area = ud.convert(LMA, "g cm-2", "kg m-2"),
-    leaf_water_thickness = ud.convert(EWT, "g cm-2", "kg m-2"),
     leaf_CN_ratio_mass = leaf_C_pct_mass / leaf_N_pct_mass,
     leaf_protein_pct_mass = (C_prot1 + C_prot2) / 2,
     leaf_cellulose_pct_mass = (C_cell1 + C_cell2) / 2,
@@ -73,9 +77,18 @@ lopex_traits <- lopex_raw %>%
     )
   ) %>%
   select(
-    -C_a, -C_b, -C_ab, -C_car, -C_anth, -LMA, -EWT,
     -C_prot1, -C_prot2, -C_cell1, -C_cell2, -C_lign1, -C_lign2,
-    -C_star1, -C_star2
+    -C_star1, -C_star2, -FW, -DW
+  ) %>%
+  mutate_at(vars(dplyr::matches("pct_mass")), add_metadata, data_unit = "%") %>%
+  mutate_at(vars(dplyr::matches("ratio")), add_metadata, data_unit = "") %>%
+  mutate_at(vars(dplyr::matches("per_area")), add_metadata, data_unit = "ug cm-2") %>%
+  add_column_metadata(
+    leaf_prospect_N = list(data_unit = ""),
+    leaf_mass_per_area = list(data_unit = "g cm-2"),
+    leaf_water_thickness = list(data_unit = "g cm-2"),
+    leaf_area = list(data_unit = "cm2"),
+    leaf_thickness = list(data_unit = "um")
   )
 
 species_info <- read_csv(here("extdata/species_dict/lopex_species_dict.csv"))
@@ -90,6 +103,9 @@ dedup <- function(x) {
     out <- unique(x)
   }
   stopifnot(length(out) == 1)
+  if (sticky::is.sticky(x)) {
+    mostattributes(out) <- attributes(x)
+  }
   out
 }
 
@@ -97,7 +113,8 @@ metadata <- metadata_all %>%
   select(-Refl_file, -Trans_file) %>%
   group_by(observation_id) %>%
   summarize_all(dedup) %>%
-  distinct()
+  distinct() %>%
+  add_metadata(!!!project_metadata)
 
 read_spec <- function(files, spectra_types) {
   map(file.path(spec_path, files), data.table::fread) %>%
@@ -105,7 +122,8 @@ read_spec <- function(files, spectra_types) {
     reduce(cbind)
 }
 
-lopex_spec <- metadata_all %>%
+message("Reading spectra data...")
+spectra <- metadata_all %>%
   select(observation_id, Refl_file, Trans_file) %>%
   mutate(
     reflectance = map(Refl_file, read_spec, spectra_types = "R"),
@@ -116,11 +134,11 @@ lopex_spec <- metadata_all %>%
   pull(spectra) %>%
   do.call(cbind, .)
 
+message("Finalizing project")
 create_project(
-  specdb_file = specdb_file,
+  specdb = specdb,
   project_code = project_code,
-  project_info = project_info,
-  spectra = lopex_spec,
+  spectra = spectra,
   metadata = metadata,
   overwrite = overwrite
 )

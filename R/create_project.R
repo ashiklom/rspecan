@@ -1,35 +1,45 @@
 #' Create a project in the spectra database
 #'
-#' @param specdb_file Path to spectra file
+#' @param specdb Path to spectra database directory
 #' @param project_code Character string of project code
-#' @param project_info List of common project information
 #' @param spectra Spectra object
 #' @export
-create_project <- function(specdb_file,
+create_project <- function(specdb,
                            project_code,
-                           project_info,
                            spectra,
                            metadata,
                            overwrite = FALSE) {
-  check_project_info(project_info)
-  check_spectra(spectra)
   check_metadata(metadata)
+  check_spectra(spectra)
+
+  stopifnot(metadata(metadata)$project_code == project_code)
+
+  if (!fs::dir_exists(specdb)) {
+    stop("Spectra database does not exist at ", specdb, ".")
+  }
+
+  fs::dir_create(specdb)
+
+  proj_path <- fs::path(specdb, project_code)
+
+  if (fs::dir_exists(proj_path) && !overwrite) {
+    stop("Project already exists")
+  }
+
+  fs::dir_create(proj_path)
+  spectra_path <- fs::path(proj_path, "spectra")
+  fs::dir_create(spectra_path)
 
   assertthat::assert_that(
     all(colnames(spectra) %in% metadata$observation_id)
   )
 
-  input_list <- list(
-    info = project_info,
-    spectra = spectra2list(spectra, colnames(spectra)),
-    metadata = metadata
-  )
+  metar::write_csvy(metadata, filename = fs::path(proj_path, "metadata.csvy"))
 
-  specdb <- h5_open(specdb_file)
-  on.exit(specdb$close_all())
+  spectra_list <- spectra2list(spectra, colnames(spectra))
+  spectra_names <- fs::path(spectra_path, names(spectra_list), ext = "csvy")
 
-  hf <- h5_group(specdb, project_code, overwrite) %>%
-    list2hdf(input_list, overwrite)
+  walk2(spectra_list, spectra_names, metar::write_csvy)
 
   invisible(TRUE)
 }

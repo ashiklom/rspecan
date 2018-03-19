@@ -4,15 +4,12 @@
 \alias{create_project}
 \title{Create a project in the spectra database}
 \usage{
-create_project(specdb_file, project_code, project_info, spectra, metadata,
-  overwrite = FALSE)
+create_project(specdb, project_code, spectra, metadata, overwrite = FALSE)
 }
 \arguments{
-\item{specdb_file}{Path to spectra file}
+\item{specdb}{Path to spectra database directory}
 
 \item{project_code}{Character string of project code}
-
-\item{project_info}{List of common project information}
 
 \item{spectra}{Spectra object}
 }
