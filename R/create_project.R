@@ -12,7 +12,7 @@ create_project <- function(specdb,
   check_metadata(metadata)
   check_spectra(spectra)
 
-  stopifnot(metadata(metadata)$project_code == project_code)
+  stopifnot(metar::metadata(metadata)$project_code == project_code)
 
   if (!fs::dir_exists(specdb)) {
     stop("Spectra database does not exist at ", specdb, ".")
