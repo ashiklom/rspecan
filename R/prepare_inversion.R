@@ -12,7 +12,7 @@ prepare_inversion <- function(specdb, prospect_version,
     dplyr::filter(status %in% c("none", "not_converged"))
 
   fs::dir_create(inversion_path)
-  write_inversion_table(fs::path(inversion_path, "invert_queue"))
+  write_inversion_table(status_sub, fs::path(inversion_path, "invert_queue"))
 
   logdir <- fs::path(inversion_path, "log")
   fs::dir_create(logdir)
@@ -71,7 +71,7 @@ write_inversion_table <- function(status_table, filename, ...) {
     dplyr::mutate(
       spectra_types = purrr::map_chr(spectra_types, paste, collapse = "|")
     ) %>%
-    readr::write_csv(status_table, filename, ...)
+    readr::write_csv(path = filename, ...)
 }
 
 #' @export
