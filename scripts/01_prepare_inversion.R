@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 library(rspecan)
 
 specdb <- "spectra_db"

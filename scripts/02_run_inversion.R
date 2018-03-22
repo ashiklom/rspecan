@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 library(rspecan)
 
 args <- commandArgs(trailingOnly = TRUE)
