@@ -4,8 +4,7 @@
 \alias{prepare_inversion}
 \title{Prepare an inversion for submission}
 \usage{
-prepare_inversion(specdb, prospect_version,
-  inversion_path = strftime(Sys.time(), "invert/\%Y\%m\%d-\%H\%M\%S"),
+prepare_inversion(specdb, prospect_version, inversion_path = "inversion",
   overwrite_all = FALSE)
 }
 \description{

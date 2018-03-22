@@ -4,10 +4,10 @@
 \alias{write_info}
 \title{Write log info about a run}
 \usage{
-write_info(string, file = getOption("inversion_log"), append = TRUE, ...)
+write_info(..., file = getOption("inversion_log"), append = TRUE)
 }
 \arguments{
-\item{string}{A string, to be passed to [glue::glue]}
+\item{...}{String to be pasted together and written out}
 
 \item{file}{Output file. Defaults to `getOption("inversion_log")` or, if that's unset, the R console}
 }

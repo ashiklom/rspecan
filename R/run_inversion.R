@@ -38,23 +38,22 @@ run_inversion <- function(project,
                            spectra_types = spectra_types)
 
   info_file <- fs::path(invert_path, "info")
-  if (interactive()) info_file <- ""
   options(inversion_log = info_file)
 
-  write_info("start_time: {Sys.time()}", append = FALSE)
-  write_info("project_code: {project}")
-  write_info("observation_id: {observation_id}")
-  write_info("prospect_version: {prospect_version}")
-  write_info("input_spectra_types: {paste(spectra_types, collapse = ' ')}")
-  #spec_types <- PEcAnRTM::spectra_types(observed) %>% paste(collapse = ' ')
-  #write_info("observed_spectra_types: {spec_types}")
-  #waves <- PEcAnRTM::wavelengths(observed)
-  #write_info("observed_ncol: {ncol(observed)}")
-  #write_info("observed_wl_min: {min(waves)}")
-  #write_info("observed_wl_max: {max(waves)}")
-  #write_info("observed_nwl: {nrow(observed)}")
-  write_info("hostname: {system2('hostname', stdout = TRUE)}")
-  write_info("run_directory: {getwd()}")
+  write_info("start_time: ", as.character(Sys.time()), append = FALSE)
+  write_info("project_code: ", project)
+  write_info("observation_id: ", observation_id)
+  write_info("prospect_version: ", prospect_version)
+  write_info("input_spectra_types: ", paste(spectra_types, collapse = " "))
+  spec_types <- PEcAnRTM::spectra_types(observed) %>% paste(collapse = " ")
+  write_info("observed_spectra_types: ", spec_types)
+  waves <- PEcAnRTM::wavelengths(observed)
+  write_info("observed_ncol: ", ncol(observed))
+  write_info("observed_wl_min: ", min(waves))
+  write_info("observed_wl_max: ", max(waves))
+  write_info("observed_nwl: ", nrow(observed))
+  write_info("hostname: ", system2("hostname", stdout = TRUE))
+  write_info("run_directory: ", getwd())
 
   tryCatch({
     set_inversion_status(specdb, project, observation_id, prospect_version, "running")
@@ -63,13 +62,13 @@ run_inversion <- function(project,
   }, interrupt = function(e) {
     message("Caught user interrupt. Setting inversion status to `none`")
     set_inversion_status(specdb, project, observation_id, prospect_version, "none")
-    write_info("end_time_sampling: {Sys.time()}")
+    write_info("end_time_sampling:", as.character(Sys.time()))
     write_info("status: Run terminated via user interrupt")
     stop("Terminating execution because of user interrupt.")
   }
   )
 
-  write_info("end_time_sampling: {Sys.time()}")
+  write_info("end_time_sampling:", as.character(Sys.time()))
 
   samples_matrix <- BayesianTools::getSample(samples, parametersOnly = FALSE)
   saveRDS(samples_matrix, fs::path(invert_path, "samples.rds"))
@@ -80,12 +79,12 @@ run_inversion <- function(project,
   if (samples_burned$burnin == 1) {
     message("Run did not converge. Marking status as 'not_converged'.")
     set_inversion_status(specdb, project, observation_id, prospect_version, "not_converged")
-    #write_info("status: Not converged after {nrow(samples_matrix)} iterations")
+    write_info("status: Not converged after ", nrow(samples_matrix), " iterations")
   } else {
     message("Run converged. Marking status as 'complete'.")
     set_inversion_status(specdb, project, observation_id, prospect_version, "complete")
-    #write_info("status: Converged after {nrow(samples_matrix)} iterations")
-    #write_info("burnin: {samples_burned$burnin}")
+    write_info("status: Converged after ", nrow(samples_matrix), " iterations")
+    write_info("burnin: ", samples_burned$burnin)
     param_summary <- summary(samples_burned$samples)[c("statistics", "quantiles")] %>%
       purrr::map(tibble::as_tibble, rownames = "parameter") %>%
       purrr::reduce(dplyr::left_join, by = "parameter") %>%
@@ -108,7 +107,12 @@ run_inversion <- function(project,
 #' @param status Character indicating status
 #' @export
 set_inversion_status <- function(specdb, project, observation_id, prospect_version, status) {
-  statusfile <- fs::path(specdb, project, "inversion", observation_id, "status")
+  status_dir <- fs::path(
+    specdb, project, "inversion",
+    observation_id, paste0("prospect_", prospect_version)
+  )
+  fs::dir_create(status_dir)
+  statusfile <- fs::path(status_dir, "status")
   status_levels <- c("running", "complete", "not_converged", "none")
   assertthat::assert_that(
     assertthat::is.string(status),
@@ -125,7 +129,8 @@ set_inversion_status <- function(specdb, project, observation_id, prospect_versi
 #' @rdname get_inversion_status
 #' @export
 get_inversion_status <- function(specdb, project, observation_id, prospect_version) {
-  statusfile <- fs::path(specdb, project, "inversion", observation_id, "status")
+  statusfile <- fs::path(specdb, project, "inversion",
+                         observation_id, prospect_version, "status")
   if (!fs::file_exists(statusfile)) {
     return("none")
   }
@@ -134,11 +139,11 @@ get_inversion_status <- function(specdb, project, observation_id, prospect_versi
 
 #' Write log info about a run
 #'
-#' @param string A string, to be passed to [glue::glue]
+#' @param ... String to be pasted together and written out
 #' @param file Output file. Defaults to `getOption("inversion_log")` or, if that's unset, the R console
 #' @inheritParams base::cat
-#' ... Additional arguments to [base::cat]
-write_info <- function(string, file = getOption("inversion_log"), append = TRUE, ...) {
+#' ... Additional arguments to [base::cat()]
+write_info <- function(..., file = getOption("inversion_log"), append = TRUE) {
   if (is.null(file)) file <- ""
-  cat(glue::glue(string), "\n", file = file, append = append, ...)
+  cat(..., "\n", file = file, append = append, sep = "")
 }

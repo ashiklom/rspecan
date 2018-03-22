@@ -16,9 +16,7 @@ project_metadata <- list(
   URL = "http://opticleaf.ipgp.fr/index.php?page=database",
   site_description = "Joint Research Center, Ispra, Italy",
   spectra_methods = list(
-    apparatus = "integrating sphere",
     calibration = "spectralon ratio",
-    instrument = "perkin-elmer-l19",
     comment = paste(
       "For more details, see",
       "http://teledetection.ipgp.jussieu.fr/opticleaf/lopex.htm#spectral"
@@ -33,6 +31,7 @@ common_metadata <- tibble(
   longitude = 8.630,
   year = 1993,
   instrument_code = "perkin-elmer-l19",
+  apparatus = "integrating sphere",
   is_experiment = FALSE
 )
 

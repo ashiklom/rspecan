@@ -8,7 +8,7 @@ if (length(args) == 0) {
 
 args <- as.numeric(args)
 
-queue_table <- "invert_queue"
+queue_table <- "inversion/invert_queue"
 
 stopifnot(
   all(is.numeric(args)),
@@ -16,5 +16,5 @@ stopifnot(
   file.exists(queue_table)
 )
 
-queue <- read_inversion_table(inv_table, args)
+queue <- read_inversion_table(queue_table, args)
 purrr::pwalk(queue, run_inversion)

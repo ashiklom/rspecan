@@ -15,8 +15,7 @@ Imports:
     udunits2,
     assertthat,
     fs,
-    metar,
-    glue
+    metar
 Suggests:
     testthat,
     cowplot,

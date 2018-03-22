@@ -3,14 +3,16 @@ library(rspecan)
 project <- "lopex"
 observation_id <- "lopex_50"
 prospect_version <- 5
-specdb_file <- "test.h5"
+specdb <- "spectra_db"
 spectra_types <- c("R", "CRR", "PA")
-overwrite <- FALSE
+overwrite <- TRUE
+
+inv_table <- get_status_table(specdb, prospect_version)
 
 run_inversion(
   project,
   observation_id,
-  specdb_file,
+  specdb,
   prospect_version,
   overwrite = TRUE
 )

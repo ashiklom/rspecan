@@ -2,7 +2,7 @@
 #'
 #' @export
 prepare_inversion <- function(specdb, prospect_version,
-                              inversion_path = strftime(Sys.time(), "invert/%Y%m%d-%H%M%S"),
+                              inversion_path = "inversion",
                               overwrite_all = FALSE) {
   status_table <- get_status_table(specdb, prospect_version)
   if (overwrite_all) {
