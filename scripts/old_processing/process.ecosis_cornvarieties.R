@@ -2,22 +2,21 @@ rm(list = ls())
 library(rspecan)
 sethere()
 
-data_name <- "ecosis_pepper"
-data_longname <- "Fresh and Dry Pepper Leaf Spectra with Associated Potassium and Nitrogen Measurements"
-ecosis_id <- "a67925bf-f715-449a-939c-3cb000fb7889"
+data_name <- "ecosis_cornvarieties"
+data_longname <- "Spectral Characterization of Multiple Corn Varieties: West Madison Agricultural Station 2014"
+ecosis_id <- "c0e238ea-5b23-452c-bc40-f0cfe2c6f032"
 ecosis_file <- sprintf(
-  "https://ecosis.org/package/export?package_id=%s&metadata=true",
+  "https://ecosis.org/package/export?package_id=%s&filters=&metadata=true",
   ecosis_id
 )
 
 message("Downloading data...")
 dat_raw <- read_csv(ecosis_file)
+write_csv(dat_raw, "raw_data/corn-varieties-west-madison.csv")
 message("Download complete!")
 
 dat_full <- dat_raw %>%
-  group_by(PlantNumber) %>%
-  mutate(spectra_id = sprintf("%s_%02d_%02d", data_name, PlantNumber, row_number())) %>%
-  ungroup()
+  mutate(spectra_id = sprintf("%s_%03d_%02d", data_name, ID, rep))
 
 ############################################################
 # Process spectra
@@ -51,23 +50,12 @@ dat <- dat_sub %>%
   transmute(
     data_name = !!data_name,
     spectra_id = spectra_id,
-    USDA_code = "CAAN4",
-    spectra_type = recode(
-      Measurement_Type,
-      "Fresh Transmittance" = "transmittance",
-      "Fresh Reflectance" = "reflectance",
-      "Fresh Absorbance" = "absorbance",
-      "Dry Reflectance" = "reflectance"
-    ),
-    fresh_dry = case_when(
-      grepl("^Fresh", Measurement_Type) ~ "fresh",
-      grepl("^Dry", Measurement_Type) ~ "dry",
-      TRUE ~ NA_character_
-    ),
-    Nmass = `Leaf nitrogen content per leaf dry mass (% DW)`,
-    Nmass_unit = "%",
-    Kmass = `Leaf potassium content per leaf dry mass (% DW)`,
-    Kmass_unit = "%"
+    spectra_type = "reflectance",
+    USDA_code = "ZEMA",
+    variety = Variety,
+    latitude = 43.0617,
+    longitude = -89.532,
+    instrument = "ASD FieldSpec 3"
   )
 
 ############################################################

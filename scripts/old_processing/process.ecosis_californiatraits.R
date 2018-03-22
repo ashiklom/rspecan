@@ -27,19 +27,14 @@ dat <- dat_sub %>%
     species = `Latin Species`,
     USDA_code = `species`,
     # traits
-    cellulose = Cellulose,
-    cellulose_unit = "%",
-    LMA = `Leaf mass per area`,
-    LMA_unit = "g m-2",
-    Nmass = `Leaf nitrogen content per leaf dry mass`,
-    Nmass_unit = "%",
-    LWC_pct = `Leaf relative water content`,
-    lignin = `Lignin`,
-    lignin_unit = "%",
+    leaf_cellulose_pct_mass = units::set_units(Cellulose, "%"),
+    leaf_mass_per_area = units::set_units(`Leaf mass per area`, "g m-2"),
+    leaf_N_pct_mass = units::set_units(`Leaf nitrogen content per leaf dry mass`, "%"),
+    leaf_water_pct_mass = units::set_units(`Leaf relative water content`, "%"),
+    leaf_lignin_pct_mass = units::set_units(`Lignin`, "%"),
     target_type = `Target Type`,
     leaf_age = `age`
   )
-
 
 spectra <- dat2specmat(dat_full, "spectra", wave_rxp)
 str(spectra)

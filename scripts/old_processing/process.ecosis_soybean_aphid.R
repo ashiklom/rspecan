@@ -2,12 +2,21 @@ rm(list = ls())
 library(rspecan)
 sethere()
 
-data_name <- "ecosis_cedarcreek_biodiversity"
-data_longname <- "2014 Cedar Creek ESR Grassland Biodiversity Experiment: Leaf-level Contact Data: Trait Predictions"
-ecosis_file <- "raw_data/2014-cedar-creek-esr-grassland-biodiversity-experiment--leaf-level-contact-data--trait-predictions.csv"
+data_name <- "ecosis_soybean_aphid"
+data_longname <- "Productivity and Characterization of Soybean Foliar Traits Under Aphid Pressure"
+ecosis_id <- "cdbb6b09-b481-4022-a0da-ad95a8b085d8"
+ecosis_file <- sprintf(
+  "https://ecosis.org/package/export?package_id=%s&metadata=true",
+  ecosis_id
+)
 
-dat_full <- read_csv(ecosis_file) %>%
-  mutate(spectra_id = sprintf("%s_%03d", data_name, ID))
+message("Downloading data...")
+dat_raw <- read_csv(ecosis_file)
+write_csv(dat_raw, "raw_data/soybean_aphin_pressure.csv")
+message("Download complete!")
+
+dat_full <- dat_raw %>%
+  mutate(spectra_id = sprintf("%s_%03d", data_name, SAMP_ID))
 
 ############################################################
 # Process spectra
@@ -41,26 +50,26 @@ dat <- dat_sub %>%
   transmute(
     data_name = !!data_name,
     spectra_id = spectra_id,
-    instrument = paste(`Instrument Manufacturer`, `Instrument Model`),
-    spectra_type = `Measurement Quantity`,
-    LMA = `LMA g m2`,
-    LMA_unit = "g m-2",
-    Cmass = `C`,
-    Cmass_unit = "%",
-    Nmass = N,
-    Nmass_unit = "%",
-    CN_ratio = `C:N`,
-    lignin = Lignin,
-    lignin_unit = "%",
-    cellulose = `Cell`,
-    cellulose_unit = "%",
-    fiber = Fiber,
-    fiber_unit = "%",
-    chlorophyll = `Chl g m2`,
-    chlorophyll_unit = "g m2",
-    USDA_code = toupper(`USDA Symbol`),
-    latitude = 45.402,
-    longitude = -93.199
+    spectra_type = "reflectance",
+    USDA_code = "GLMA4",
+    leaf_cartot_per_area = units::set_units(CAROTENOIDS, "ug cm-2"),
+    leaf_chla_per_area = units::set_units(CHL_a, "ug cm-2"),
+    leaf_chlb_per_area = units::set_units(CHL_b, "ug cm-2"),
+    leaf_chltot_per_area = leaf_chla_per_area + leaf_chlb_per_area,
+    collection_date = ISOdate(YYYY, MM, DD),
+    instrument = INSTRUMENT,
+    latitude = LATITUDE,
+    longitude = LONGITUDE,
+    sun_shade = recode(LEAF_HEIGHT, L = "shade", U = "sun"),
+    soy_stage = STAGE,
+    treatment_soy = TREAT,
+    leaf_mass_per_area = units::set_units(gmm2_LMA, "g m-2"),
+    leaf_C_pct_mass = units::set_units(pct_CARBON, "%"),
+    leaf_cellulose_pct_mass = units::set_units(pct_CELLULOSE, "%"),
+    leaf_fiber_pct_mass = units::set_units(pct_FIBER, "%"),
+    leaf_lignin_pct_mass = units::set_units(pct_LIGNIN, "%"),
+    leaf_N_pct_mass = units::set_units(pct_NITROGEN, "%"),
+    is_agriculture = TRUE
   )
 
 ############################################################

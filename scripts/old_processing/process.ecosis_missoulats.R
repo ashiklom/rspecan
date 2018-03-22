@@ -26,18 +26,12 @@ dat <- dat_sub %>%
     elevation = `Elevation (m)`,
     elevation_unit = "m",
     description = `Full Description`,
-    ash = `% Ash`,
-    ash_unit = "%",
-    fat = `% Fat`,
-    fat_unit = "%",
-    neutral_detergent_fiber = `% Neutral detergent fiber`,
-    neutral_detergent_fiber_unit = "%",
-    NSC = `% Non-structural carbohydrate`,
-    NSC_unit = "%",
-    protein = `% Protein`,
-    protein_unit = "%",
-    LWC = `Relative water content` * 100,
-    LWC_unit = "%"
+    leaf_ash_pct_mass = units::set_units(`% Ash`, "%"),
+    leaf_fat_pct_mass = units::set_units(`% Fat`, "%"),
+    leaf_fiber_pct_mass = units::set_units(`% Neutral detergent fiber`, "%"),
+    leaf_NSC_pct_mass = units::set_units(`% Non-structural carbohydrate`, "%"),
+    leaf_protein_pct_mass = units::set_units(`% Protein`, "%"),
+    leaf_water_pct_mass = units::set_units(`Relative water content` * 100, "%")
   )
 
 spectra <- dat2specmat(dat_full, "Spectra", wave_rxp)

@@ -2,20 +2,21 @@ rm(list = ls())
 library(rspecan)
 sethere()
 
-data_name <- "ecosis_cornvarieties"
-data_longname <- "Spectral Characterization of Multiple Corn Varieties: West Madison Agricultural Station 2014"
-ecosis_id <- "c0e238ea-5b23-452c-bc40-f0cfe2c6f032"
+data_name <- "ecosis_milkweed_stress"
+data_longname <- "Common Milkweed Leaf Responses to Water Stress and Elevated Temperature"
+ecosis_id <- "9425d5b2-7633-45b5-9c07-6ec3323499a0"
 ecosis_file <- sprintf(
-  "https://ecosis.org/package/export?package_id=%s&filters=&metadata=true",
+  "https://ecosis.org/package/export?package_id=%s&metadata=true",
   ecosis_id
 )
 
 message("Downloading data...")
 dat_raw <- read_csv(ecosis_file)
+write_csv(dat_raw, "raw_data/milkweed_leaf_responses_to_water_stress_and_elevated_temperature.csv")
 message("Download complete!")
 
 dat_full <- dat_raw %>%
-  mutate(spectra_id = sprintf("%s_%03d_%02d", data_name, ID, rep))
+  mutate(spectra_id = sprintf("%s_%03d_%02d", data_name, ID, rep_ID))
 
 ############################################################
 # Process spectra
@@ -50,11 +51,16 @@ dat <- dat_sub %>%
     data_name = !!data_name,
     spectra_id = spectra_id,
     spectra_type = "reflectance",
-    USDA_code = "ZEMA",
-    variety = Variety,
-    latitude = 43.0617,
-    longitude = -89.532,
-    instrument = "ASD FieldSpec 3"
+    USDA_code = "ASSY",
+    leaf_CN_ratio = units::set_units(`C:N`, units::unitless),
+    leaf_fiber_pct_mass = units::set_units(`Fiber (% dm)`, "%"),
+    leaf_C_pct_mass = units::set_units(`Leaf carbon content per leaf area`, "%"),
+    leaf_mass_per_area = units::set_units(`Leaf mass per area`, "g m-2"),
+    leaf_N_pct_mass = units::set_units(`Leaf nitrogen content per leaf area (% dm)`, "%"),
+    leaf_lignin_pct_mass = units::set_units(`Lignin (% dm)`, "%"),
+    leaf_Vcmax_area = units::set_units(`Vcmax`, "umol m-2 s-1"),
+    treatment_water = recode(`Water treatment`, ww = "Well-watered", ws = "Water stressed"),
+    treatment_temperature = Temperature
   )
 
 ############################################################
