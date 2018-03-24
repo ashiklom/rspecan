@@ -1,5 +1,11 @@
 # Results
 
+- Intra-specific effects:
+  - Leaf age -- Wu Brazil
+  - Needle age -- NASA FFT
+  - Canopy position -- NASA FFT, Wu Brazil
+  - Phenology -- Barnes, Yang
+  
 ```{r setupresults, echo = FALSE, message = FALSE, warning = FALSE, cache = FALSE}
 knitr::read_chunk(here::here("manuscript", "setup.R"))
 knitr::read_chunk(here::here("manuscript", "validation.R"))
