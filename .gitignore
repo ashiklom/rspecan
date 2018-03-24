@@ -5,8 +5,8 @@ raw_data
 processed_data
 .scratch.*
 
+spectra_db
+
 manuscript/_book
 manuscript/_bookdown_files
 **/*.html
-
-**/*.h5

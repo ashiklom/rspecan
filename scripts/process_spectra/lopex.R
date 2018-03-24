@@ -45,7 +45,6 @@ species_rxp <- "([[:alpha:]]{3})[[:alpha:]]* x? ?([[:alpha:]]{3})[[:alpha:]]* *.
 lopex_raw <- read_csv(chem_path) %>%
   rename(raw_species_code = `Latin Name`) %>%
   select(-`Plant Type`, -`English Name`) %>%
-  as_tibble() %>%
   mutate_if(is.numeric, na_if, y = -999) %>%
   fill(raw_species_code) %>%
   mutate(
