@@ -16,10 +16,10 @@ project_metadata <- list(
   short_name = "ANGERS",
   long_name = "Angers, France spectra from INRA",
   URL = "http://opticleaf.ipgp.fr/index.php?page=database",
-  site_description = "INRA Center in Angers, France",
+  site_description = "National Institute for Agricultural Research (INRA), Angers, France",
   spectra_methods = list(
-    calibration = "???",
-    comment = "???"
+    calibration = "unknown",
+    comment = "For more details, see ECOSIS project website: https://ecosis.org/#result/2231d4f6-981e-4408-bf23-1b2b303f475e"
   )
 )
 
@@ -29,8 +29,8 @@ common_metadata <- tibble(
   latitude = 47.47,
   longitude = -0.56,
   year = 2003,
-  instrument_code = "???",
-  apparatus = "???",
+  instrument_code = "asd-fs",
+  apparatus = "leaf_clip",
   is_experiment = FALSE
 )
 
