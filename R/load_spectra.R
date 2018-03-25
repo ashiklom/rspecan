@@ -103,7 +103,7 @@ get_metadata <- function(specdb, projects = NULL, include_metadata = TRUE) {
   all_df <- tibble::tibble(project_code = projects) %>%
     dplyr::mutate(data = purrr::map(
       project_code,
-      ~metar::read_csvy(fs::path(specdb, project_code, "metadata.csvy")))
+      ~metar::read_csvy(fs::path(specdb, ., "metadata.csvy")))
     )
   
   meta <- purrr::map(all_df$data, metar::get_all_metadata) %>%
