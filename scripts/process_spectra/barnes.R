@@ -1,7 +1,7 @@
 library(rspecan)
-library(here)
 library(tidyverse)
 library(PEcAnRTM)
+import::from("here", "here")
 
 config_file <- here("scripts/process_spectra/config.R")
 stopifnot(file.exists(config_file))
