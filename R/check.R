@@ -31,7 +31,7 @@ check_metadata <- function(metadata) {
       !any(duplicated(observation_id)),
       is.character(species_code),
       is.numeric(year),
-      is.character(instrument_code),
+      is.character(instrument_code) || is.factor(instrument_code),
       is.numeric(latitude),
       is.numeric(longitude),
       is.logical(is_experiment)
