@@ -49,7 +49,7 @@ metadata <- dat_sub %>%
     observation_id = observation_id,
     species_code = "ZEMA",
     Database_ID = "USDA Plants",
-    variety = Variety,
+    variety = as.character(Variety),
     latitude = 43.0617,
     longitude = -89.532,
     instrument_code = "asd-fs3",
