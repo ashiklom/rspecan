@@ -60,7 +60,7 @@ metadata_all <- tibble(filename = fs::path_file(spec_files)) %>%
     day = as.numeric(day),
     month = as.numeric(month),
     year = str_extract(year_id, "^[[:digit:]]{4}") %>% as.numeric(),
-    collection_date = as.Date(ISOdate(year, month, day)),
+    collection_date = as.POSIXct(ISOdate(year, month, day)),
     observation_id = paste(
       "barnes",
       tag_leaf,
@@ -93,6 +93,6 @@ create_project(
   project_code = project_code,
   spectra = spectra,
   metadata = metadata,
-  overwrite = overwrite
+  overwrite = TRUE
 )
 message("Done!")

@@ -5,7 +5,7 @@ library(PEcAnRTM)
 library(readxl)
 library(data.table)
 
-config_file <- here("scripts/process_spectra/config.R")
+config_file <- here::here("scripts/process_spectra/config.R")
 stopifnot(file.exists(config_file))
 source(config_file)
 
@@ -101,7 +101,7 @@ traits_main <- read_excel(traits_main_file, sheet = 2) %>%
     speciesdatacode = USDA_Species_Code
   ) %>%
   mutate(
-    collectiondate = as.Date(strptime(Measurement_Date, "%Y%m%d")),
+    collectiondate = as.POSIXct(strptime(Measurement_Date, "%Y%m%d")),
     year = lubridate::year(collectiondate),
     sitecode = "Barrow",
     leaf_mass_per_area = add_metadata(LMA_gDW_m2, data_unit = "g m-2"),
@@ -155,7 +155,7 @@ seward_2016_lma <- read_csv(seward_2016_lma_file) %>%
     SampleName = paste0("BNL", Sample_Barcode),
     leaf_mass_per_area = add_metadata(LMA_gDW_m2, data_unit = "g m-2"),
     year = 2016,
-    collectiondate = as.Date(strptime(Measurement_Date, "%Y%m%d"))
+    collectiondate = as.POSIXct(strptime(Measurement_Date, "%Y%m%d"))
   ) %>%
   select(
     SampleName, sitecode, year, speciesdatacode = USDA_Species_Code,
@@ -184,7 +184,7 @@ barrow_2016_lma <- read_csv(barrow_2016_lma_file) %>%
   mutate(
     SampleName = paste0("BNL", Sample_Barcode),
     year = 2016,
-    collectiondate = as.Date(strptime(Measurement_Date, "%Y%m%d")),
+    collectiondate = as.POSIXct(strptime(Measurement_Date, "%Y%m%d")),
     sitecode = "Barrow",
     leaf_mass_per_area = add_metadata(LMA_gDW_m2, data_unit = "g m-2")
   ) %>%
@@ -214,7 +214,9 @@ traits_full <- full_join(dat_2016, dat_other) %>%
     species_data_code = speciesdatacode,
     collection_date = collectiondate
   ) %>%
-  mutate(observation_id = paste(project_code, SampleName, year, sep = "|"))
+  mutate(
+    observation_id = paste(project_code, SampleName, year, sep = "|")
+  )
 
 samples_raw <- samples_spec %>%
   full_join(traits_full) %>%

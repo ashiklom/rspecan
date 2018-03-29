@@ -8,7 +8,7 @@ library(dtplyr)
 import::from("lubridate", "ymd", "year")
 import::from("udunits2", "ud.convert")
 
-config_file <- here("scripts/process_spectra/config.R")
+config_file <- here::here("scripts/process_spectra/config.R")
 stopifnot(file.exists(config_file))
 source(config_file)
 
@@ -153,7 +153,7 @@ all_samples <- accp_spec %>%
            speciescode = "PSME",
            plot_id = NA)] %>%
 # Populate additional metadata
-    .[, collectiondate := as.Date(as.character(colldate), format = "%y%m%d")] %>%
+    .[, collectiondate := as.POSIXct(as.character(colldate), format = "%y%m%d")] %>%
     .[, year := year(collectiondate)] %>%
     .[, projectcode := project_code] %>%
     .[, fullname := paste(project_code, samplename, year, sep = "|")] %>%

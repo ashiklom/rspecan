@@ -28,7 +28,7 @@ metadata <- dat_sub %>%
     observation_id = paste(project_code, `sample name`, spectra, sep = "."),
     spectra_type = recode(measurement, `REFL` = "R"),
     replicate = `Replicate`,
-    collection_date = 41365 + lubridate::as_date("1900-01-01"),
+    collection_date = 41365 + lubridate::as_date("1900-01-01") %>% as.POSIXct(),
     year = lubridate::year(collection_date),
     latitude = Latitude,
     longitude = Longitude,

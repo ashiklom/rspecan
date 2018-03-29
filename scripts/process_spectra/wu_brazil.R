@@ -56,7 +56,7 @@ metadata <- file.path(datapath, "Brazil_Trait_Data_filter_v1.csv") %>%
     leaf_water_pct_mass = add_metadata(Water_Perc, data_unit = "%"),
     leaf_water_thickness = leaf_mass_per_area * leaf_water_pct_mass %>%
       add_metadata(data_unit = "kg m-2"),
-    collection_date = mdy(Day),
+    collection_date = mdy(Day) %>% as.POSIXct(),
     year = year(collection_date),
     canopy_position = recode(
       Light_Environment,

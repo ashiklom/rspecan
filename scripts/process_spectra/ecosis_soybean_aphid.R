@@ -53,7 +53,7 @@ dat <- dat_sub %>%
     leaf_chlb_per_area = add_metadata(CHL_b, data_unit = "ug cm-2"),
     leaf_chltot_per_area = leaf_chla_per_area + leaf_chlb_per_area %>%
       add_metadata(data_unit = "ug cm-2"),
-    collection_date = ISOdate(YYYY, MM, DD),
+    collection_date = ISOdate(YYYY, MM, DD) %>% as.POSIXct(),
     year = lubridate::year(collection_date),
     instrument_code = "asd-fs4",
     latitude = LATITUDE,

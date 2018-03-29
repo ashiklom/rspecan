@@ -37,7 +37,7 @@ meta1 <- rawdat %>%
     species_code = "PIEN",
     site_code = "MP_CO",
     year = 2014,
-    collection_date = as.Date("2014-09-05"),
+    collection_date = as.POSIXct("2014-09-05"),
     sun_shade = factor(Height, c("L", "H")) %>% lvls_revalue(c("shade", "sun")),
     bark_beetle_infested = factor(Infested, c("Y", "N")) %>% lvls_revalue(c("yes", "no")),
     instrument_code = "asd-fspro",

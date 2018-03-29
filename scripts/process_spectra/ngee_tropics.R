@@ -5,7 +5,7 @@ library(PEcAnRTM)
 library(readxl)
 library(data.table)
 
-config_file <- here("scripts/process_spectra/config.R")
+config_file <- here::here("scripts/process_spectra/config.R")
 stopifnot(file.exists(config_file))
 source(config_file)
 
@@ -57,7 +57,7 @@ specfile <- list.files(path_year, "leaf_spectra", full.names = TRUE)
 spectra_raw <- read_excel(specfile) %>%
   filter(!(Spectra == "BNL11815" & Site == "PNM")) %>%
   mutate(
-    collection_date = as.Date(strptime(Date, "%Y%m%d")),
+    collection_date = as.Date(strptime(Date, "%Y%m%d")) %>% as.POSIXct(),
     year = lubridate::year(collection_date),
     site_code = Site,
     instrument_code = dplyr::recode(Instrument, "SVC_HR-1024i" = "svc-hr"),
