@@ -92,10 +92,11 @@ read_spectra <- function(filename, ...) {
 #' @param projects Character vector of projects for which to load metadata. If 
 #' `NULL` (default), load all projects.
 #' @param include_metadata Logical. If `TRUE`, include a list column of metadata
+#' @param unfactor Logical. If `TRUE`, convert factor columns to character
 #' @inheritParams load_spectra
 #' @return Metadata for specified projects, as `tibble`
 #' @export
-get_metadata <- function(specdb, projects = NULL, include_metadata = TRUE) {
+get_metadata <- function(specdb, projects = NULL, include_metadata = TRUE, unfactor = TRUE) {
   if (is.null(projects)) {
     projects <- fs::dir_ls(specdb, type = "dir") %>% fs::path_file() %>% as.character()
   }
@@ -105,13 +106,21 @@ get_metadata <- function(specdb, projects = NULL, include_metadata = TRUE) {
       project_code,
       ~metar::read_csvy(fs::path(specdb, ., "metadata.csvy")))
     )
-  
-  meta <- purrr::map(all_df$data, metar::get_all_metadata) %>%
-    setNames(projects)
 
+  if (unfactor) {
+    all_df$data <- purrr::map(
+      all_df$data,
+      dplyr::mutate_if,
+      is.factor,
+      as.character
+    )
+  }
+  
   out <- tidyr::unnest(all_df, data)
 
   if (include_metadata) {
+    meta <- purrr::map(all_df$data, metar::get_all_metadata) %>%
+      setNames(projects)
     out <- metar::add_metadata(out, !!!meta)
   }
   out
