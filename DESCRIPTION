@@ -15,7 +15,8 @@ Imports:
     udunits2,
     assertthat,
     fs,
-    metar
+    metar,
+    progress
 Suggests:
     testthat,
     cowplot,

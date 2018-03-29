@@ -129,9 +129,9 @@ set_inversion_status <- function(specdb, project, observation_id, prospect_versi
 #' @rdname get_inversion_status
 #' @export
 get_inversion_status <- function(specdb, project, observation_id, prospect_version) {
-  statusfile <- fs::path(specdb, project, "inversion",
-                         observation_id, prospect_version, "status")
-  if (!fs::file_exists(statusfile)) {
+  statusfile <- file.path(specdb, project, "inversion",
+                          observation_id, paste0("prospect_", prospect_version), "status")
+  if (!file.exists(statusfile)) {
     return("none")
   }
   readLines(statusfile)

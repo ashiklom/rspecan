@@ -40,7 +40,7 @@ prepare_inversion <- function(specdb, prospect_version,
 #' @inheritParams run_inversion
 #' @export
 get_status_table <- function(specdb, prospect_version, spectra_types = c("R", "PA", "CRR")) {
-  get_metadata(specdb, include_metadata = FALSE) %>%
+  meta <- get_metadata(specdb, include_metadata = FALSE) %>%
     dplyr::select(project = project_code, observation_id) %>%
     dplyr::mutate(
       specdb = specdb,
@@ -49,7 +49,16 @@ get_status_table <- function(specdb, prospect_version, spectra_types = c("R", "P
     dplyr::left_join(
       tidyr::expand(., tidyr::crossing(unique_id, prospect_version)),
       by = "unique_id"
-    ) %>%
+    )
+
+  do_status <- function(specdb, project, observation_id, prospect_version, pb) {
+    pb$tick()
+    get_inversion_status(specdb, project, observation_id, prospect_version)
+  }
+
+  message("Getting inversion status")
+  pb <- progress::progress_bar$new(total = nrow(meta))
+  meta %>%
     dplyr::mutate(
       status = purrr::pmap_chr(
         list(
@@ -58,7 +67,8 @@ get_status_table <- function(specdb, prospect_version, spectra_types = c("R", "P
           observation_id = observation_id,
           prospect_version = prospect_version
         ),
-        get_inversion_status
+        do_status,
+        pb = pb
       )
     ) %>%
     tibble::add_column(spectra_types = list(spectra_types))

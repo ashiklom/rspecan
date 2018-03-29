@@ -4,7 +4,8 @@
 \alias{get_metadata}
 \title{Retrieve all metadata for given project}
 \usage{
-get_metadata(specdb, projects = NULL, include_metadata = TRUE)
+get_metadata(specdb, projects = NULL, include_metadata = TRUE,
+  unfactor = TRUE)
 }
 \arguments{
 \item{specdb}{Path to spectra database}
@@ -13,6 +14,8 @@ get_metadata(specdb, projects = NULL, include_metadata = TRUE)
 `NULL` (default), load all projects.}
 
 \item{include_metadata}{Logical. If `TRUE`, include a list column of metadata}
+
+\item{unfactor}{Logical. If `TRUE`, convert factor columns to character}
 }
 \value{
 Metadata for specified projects, as `tibble`
