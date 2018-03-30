@@ -1,6 +1,8 @@
 library(rspecan)
 library(tidyverse)
 library(udunits2)
+library(metar)
+library(PEcAnRTM)
 
 config_file <- here("scripts/process_spectra/config.R")
 stopifnot(file.exists(config_file))
@@ -138,5 +140,5 @@ create_project(
   project_code = project_code,
   spectra = spectra,
   metadata = metadata,
-  overwrite = overwrite
+  overwrite = TRUE
 )

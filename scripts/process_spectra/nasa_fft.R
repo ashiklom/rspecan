@@ -58,7 +58,7 @@ all_data <- all_raw %>%
   ) %>%
   select(-Instrumentation, -Measurement_Type, -Measurement)
 
-obs_ids <- pull(all_refl, observation_id)
+obs_ids <- pull(all_data, observation_id)
 
 raw_spec <- all_data %>%
   select(starts_with("Wave_"))

@@ -94,5 +94,5 @@ create_project(
   project_code = project_code,
   spectra = spectra,
   metadata = metadata,
-  overwrite = overwrite
+  overwrite = TRUE
 )

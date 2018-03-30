@@ -3,7 +3,7 @@ library(tidyverse)
 library(metar)
 library(PEcAnRTM)
 
-config_file <- here("scripts/process_spectra/config.R")
+config_file <- here::here("scripts/process_spectra/config.R")
 stopifnot(file.exists(config_file))
 source(config_file)
 
