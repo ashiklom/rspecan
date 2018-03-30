@@ -16,12 +16,13 @@ Imports:
     assertthat,
     fs,
     metar,
-    progress
+    progress,
+    here
 Suggests:
     testthat,
     cowplot,
-    here,
-    import
+    import,
+    ggsci
 License: MIT
 Encoding: UTF-8
 LazyData: true
