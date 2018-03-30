@@ -105,7 +105,13 @@ get_metadata <- function(specdb, projects = NULL, include_metadata = TRUE, unfac
     dplyr::mutate(data = purrr::map(
       project_code,
       ~metar::read_csvy(fs::path(specdb, ., "metadata.csvy")))
-    )
+    ) %>%
+    dplyr::mutate(data = purrr::map(
+      data,
+      dplyr::mutate_if,
+      ~inherits(., "Date"),
+      as.POSIXct
+    ))
 
   if (unfactor) {
     all_df$data <- purrr::map(
@@ -115,7 +121,7 @@ get_metadata <- function(specdb, projects = NULL, include_metadata = TRUE, unfac
       as.character
     )
   }
-  
+
   out <- tidyr::unnest(all_df, data)
 
   if (include_metadata) {
