@@ -85,53 +85,6 @@ read_spectra <- function(filename, ...) {
   PEcAnRTM::spectra(spec_mat, waves, spectypes)
 }
 
-#' Retrieve all metadata for given project
-#'
-#' Currently, all metadata is stored in one large list in the object root
-#'
-#' @param projects Character vector of projects for which to load metadata. If 
-#' `NULL` (default), load all projects.
-#' @param include_metadata Logical. If `TRUE`, include a list column of metadata
-#' @param unfactor Logical. If `TRUE`, convert factor columns to character
-#' @inheritParams load_spectra
-#' @return Metadata for specified projects, as `tibble`
-#' @export
-get_metadata <- function(specdb, projects = NULL, include_metadata = TRUE, unfactor = TRUE) {
-  if (is.null(projects)) {
-    projects <- fs::dir_ls(specdb, type = "dir") %>% fs::path_file() %>% as.character()
-  }
-
-  all_df <- tibble::tibble(project_code = projects) %>%
-    dplyr::mutate(data = purrr::map(
-      project_code,
-      ~metar::read_csvy(fs::path(specdb, ., "metadata.csvy")))
-    ) %>%
-    dplyr::mutate(data = purrr::map(
-      data,
-      dplyr::mutate_if,
-      ~inherits(., "Date"),
-      as.POSIXct
-    ))
-
-  if (unfactor) {
-    all_df$data <- purrr::map(
-      all_df$data,
-      dplyr::mutate_if,
-      is.factor,
-      as.character
-    )
-  }
-
-  out <- tidyr::unnest(all_df, data)
-
-  if (include_metadata) {
-    meta <- purrr::map(all_df$data, metar::get_all_metadata) %>%
-      setNames(projects)
-    out <- metar::add_metadata(out, !!!meta)
-  }
-  out
-}
-
 #' Add spectra column to metadata
 #'
 #' @param data `data.frame` to which to add spectra. Must include columns 
