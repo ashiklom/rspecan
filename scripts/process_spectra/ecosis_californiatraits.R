@@ -47,6 +47,11 @@ metadata <- dat_sub %>%
     leaf_water_thickness = leaf_mass_per_area * leaf_water_pct_mass / 100 %>%
       add_metadata(data_unit = "g m-2")
   ) %>%
+  group_by(latitude, longitude) %>%
+  mutate(
+    site_code = sprintf("%s.site_%03d", project_code, row_number()),
+    plot_code = site_code
+  ) %>%
   add_metadata(!!!project_metadata) %>%
   #group_by(observation_id) %>%
   #summarize_all(
