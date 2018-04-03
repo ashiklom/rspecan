@@ -24,7 +24,8 @@ get_metadata <- function(specdb, projects = NULL,
       get_project_metadata,
       specdb = specdb,
       unfactor = unfactor,
-      date_as_posix = TRUE
+      date_as_posix = TRUE,
+      metadata_cols = metadata_cols
       )
     )
 
