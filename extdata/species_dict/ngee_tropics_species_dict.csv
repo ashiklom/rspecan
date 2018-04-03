@@ -1,17 +1,17 @@
 species_data_code,species_code,scientific_name,Database_ID
-CASTEL,CAEL5,Castilla elastica Sessé,USDA_Plants
+CASTEL,CAEL5,Castilla elastica Sessé,USDA Plants
 LUEHSE,kew-2496835,Luehea seemannii Triana & Planch,ThePlantList
 ANACEX,kew-2635897,Anacardium excelsum (Bertero ex Kunth) Skeels,ThePlantList
-CORDAL,COAL,Cordia alliodora (Ruiz & Pav.) Oken,USDA_Plants
-CALYCA,CACA73,Calycophyllum candidissimum (Vahl) DC.,USDA_Plants
+CORDAL,COAL,Cordia alliodora (Ruiz & Pav.) Oken,USDA Plants
+CALYCA,CACA73,Calycophyllum candidissimum (Vahl) DC.,USDA Plants
 FICUIN,kew-2810868,Ficus insipida Willd.,ThePlantList
 ALBIED,ild-32326,Albizia guachapele (Kunth) Dugand,ThePlantList
 ANTITR,kew-156694,Pittoniotis trichantha Griseb.,ThePlantList
 PSE1SE,kew-2412504,Pseudobombax septenatum (Jacq.) Dugand,ThePlantList
-CECRPE,CESC9,Cecropia schreberiana Miq.,USDA_Plants
+CECRPE,CESC9,Cecropia schreberiana Miq.,USDA Plants
 TERMAM,kew-2431494,Terminalia amazonia (J.F.Gmel.) Exell,ThePlantList
 TOCOPI,kew-206933,Tocoyena pittieri (Standl.) Standl.,ThePlantList
-CARAGU,CAGU6,Carapa guianensis Aubl.,usda_Plants
+CARAGU,CAGU6,Carapa guianensis Aubl.,USDA Plants
 TACHVE,ild-10610,Tachigali versicolor Standl. & L.O.Williams,ThePlantList
 VOCHFE,kew-2461164,Vochysia ferruginea Mart.,ThePlantList
 VIROSP,kew-2452051,Virola multiflora (Standl.) A.C.Sm.,ThePlantList
@@ -27,8 +27,8 @@ MICOAR,tro-20302666,Miconia argentea (Sw.) DC.,ThePlantList
 CAL1,tro-3700004,Callichlamys latifolia (Rich.) K. Schum.,ThePlantList
 AST2GR,kew-2664129,Astronium graveolens Jacq.,ThePlantList
 POSOLA,kew-163583,Posoqueria latifolia (Rudge) Schult.,ThePlantList
-CAPI,CAIN5,Capparis indica (L.) Druce,USDA_Plants
-PPRE,PIRE10,Piper reticulatum L.,USDA_Plants
+CAPI,CAIN5,Capparis indica (L.) Druce,USDA Plants
+PPRE,PIRE10,Piper reticulatum L.,USDA Plants
 PIT1RU,ild-17602,Cojoba rufescens (Benth.) Britton & Rose,ThePlantList
 CUPACI,kew-2747501,Cupania cinerea Poepp.,ThePlantList
-ALBIAD,ALBIZ,Albizia Durazz.,USDA_Plants
+ALBIAD,ALBIZ,Albizia Durazz.,USDA Plants

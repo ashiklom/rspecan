@@ -266,7 +266,8 @@ metadata <- samples %>%
   mutate(
     sun_shade = factor(sun_shade, c("sun", "shade")),
     canopy_position = factor(canopy_position, c("B", "M", "T")),
-    is_experiment = FALSE
+    is_experiment = FALSE,
+    Database_ID = "USDA Plants"
   ) %>%
   mutate_at(
     vars(ends_with("_pct_mass")),

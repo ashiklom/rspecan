@@ -35,6 +35,7 @@ meta1 <- rawdat %>%
   mutate(
     observation_id = paste("foster_beetle", TREEID, Height, Infested, sep = "|"),
     species_code = "PIEN",
+    Database_ID = "USDA Plants",
     site_code = "MP_CO",
     year = 2014,
     collection_date = as.POSIXct("2014-09-05"),

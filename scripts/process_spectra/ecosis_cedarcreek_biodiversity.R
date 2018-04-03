@@ -45,7 +45,7 @@ metadata <- dat_sub %>%
     leaf_fiber_pct_mass = add_metadata(Fiber, data_unit = "%"),
     leaf_chltot_per_area = add_metadata(`Chl g m2`, data_unit = "g m-2"),
     species_code = toupper(`USDA Symbol`),
-    Database_ID = "USDA_Plants",
+    Database_ID = "USDA Plants",
     latitude = 45.402,
     longitude = -93.199,
     is_experiment = FALSE

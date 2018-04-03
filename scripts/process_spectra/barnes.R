@@ -40,7 +40,7 @@ common_metadata <- tibble(
   longitude = hms2dd(110, 50, 57, "W"),
   elevation = 1189,
   species_code = "PODE3",  # Populus deltoides
-  Database_ID = "USDA_Plants",
+  Database_ID = "USDA Plants",
   instrument_code = "asd-fs3",
   apparatus = "leaf clip",
   is_experiment = TRUE

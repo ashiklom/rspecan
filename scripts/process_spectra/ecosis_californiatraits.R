@@ -34,7 +34,7 @@ metadata <- dat_sub %>%
     longitude = Longitude,
     instrument_code = recode(`Instrument Model`, `ASD FieldSpec` = "asd-fs"),
     species_code = `species`,
-    Database_ID = "USDA_Plants",
+    Database_ID = "USDA Plants",
     is_experiment = FALSE,
     target_type = `Target Type`,
     leaf_age = `age`,

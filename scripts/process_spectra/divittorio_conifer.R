@@ -207,6 +207,7 @@ metadata <- alldat %>%
   ) %>%
   mutate(
     instrument_code = "oo-2000",
+    Database_ID = "USDA Plants",
     is_experiment = FALSE
   ) %>%
   select(-projectcode, -sitedescription, -specfile, -plotdescription) %>%

@@ -29,7 +29,7 @@ dat <- dat_sub %>%
       TRUE ~ NA_character_
     ),
     species_code = `USDA Symbol`,
-    Dataset_ID = "USDA Plants",
+    Database_ID = "USDA Plants",
     collection_date = lubridate::mdy(`Sample Collection Date`),
     year = lubridate::year(collection_date),
     target_type = `Surface Type`,

@@ -232,7 +232,8 @@ metadata <- meta_all %>%
     instrument_code = instrumentcode
   ) %>%
   mutate(
-    is_experiment = FALSE
+    is_experiment = FALSE,
+    Database_ID = "USDA Plants"
   ) %>%
   mutate_at(
     vars(ends_with("pct_mass")),

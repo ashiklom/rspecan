@@ -53,7 +53,7 @@ dat <- dat_sub %>%
   transmute(
     observation_id = spectra_id,
     species_code = "CAAN4",
-    Dataset_ID = "USDA Plants",
+    Database_ID = "USDA Plants",
     fresh_dry = case_when(
       grepl("^Fresh", Measurement_Type) ~ "fresh",
       grepl("^Dry", Measurement_Type) ~ "dry",
