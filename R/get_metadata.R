@@ -53,7 +53,8 @@ get_project_metadata <- function(specdb, project,
   if (!is.null(pb)) pb$tick()
   traits <- yaml::read_yaml(fs::path(specdb, "traits.yml"))
   proj_path <- fs::path(specdb, project, "metadata.csvy")
-  meta_raw <- metar::read_csvy(proj_path)
+  meta_raw_orig <- metar::read_csvy(proj_path)
+  meta_raw <- meta_raw_orig
   if (unfactor) {
     meta_raw <- meta_raw %>%
       dplyr::mutate_if(is.factor, as.character)
@@ -63,7 +64,8 @@ get_project_metadata <- function(specdb, project,
       dplyr::mutate_if(~inherits(., "Date"), as.POSIXct)
   }
   if (length(metadata_cols) > 0) {
-    meta_cols <- metar::metadata(meta_raw)[metadata_cols]
+    meta_cols <- metar::metadata(meta_raw_orig)[metadata_cols]
+    meta_cols <- meta_cols[setdiff(names(meta_cols), colnames(meta_raw))]
     meta_raw <- meta_raw %>%
       tibble::add_column(!!!meta_cols)
   }

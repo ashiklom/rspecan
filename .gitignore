@@ -9,4 +9,5 @@ spectra_db
 
 manuscript/_book
 manuscript/_bookdown_files
+manuscript/figures
 **/*.html

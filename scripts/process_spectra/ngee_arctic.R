@@ -31,7 +31,7 @@ speclist[["2013"]] <- read_csv(spec_2013_file) %>%
   mutate(
     SampleName = paste0("BNL", Sample_ID),
     year = 2013,
-    sitecode = "Barrow"
+    sitecode = "Barrow",
   )
 
 spec_2014_file <- file.path(path_nga, "2014_Data", "NGEE-Arctic_Barrow_2014_Leaf_GasExchange_Spectra.xlsx")
@@ -120,13 +120,17 @@ traits_main <- read_excel(traits_main_file, sheet = 2) %>%
 pigments_file <- file.path(path_nga, "2015_Data", "NGEE-Arctic_Barrow_2015_leaf_pigment_extractions.xlsx")
 pigments <- read_excel(pigments_file, sheet = 2) %>%
   rename(SampleName = Barcode) %>%
+  mutate_at(
+    c("Chl_a_mg_m2", "Chl_b_mg_m2", "Chl_a_plus_b_mg_m2", "Tot_Car_mg_m2"),
+    ~udunits2::ud.convert(., "mg m-2", "ug cm-2")
+  ) %>%
   mutate(
-    leaf_chla_per_area = add_metadata(Chl_a_mg_m2, data_unit = "mg m-2"),
-    leaf_chlb_per_area = add_metadata(Chl_b_mg_m2, data_unit = "mg m-2"),
-    leaf_chltot_per_area = add_metadata(Chl_a_plus_b_mg_m2, data_unit = "mg m-2"),
-    leaf_cartot_per_area = add_metadata(Tot_Car_mg_m2, data_unit = "mg m-2"),
+    leaf_chla_per_area = add_metadata(Chl_a_mg_m2, data_unit = "ug cm-2"),
+    leaf_chlb_per_area = add_metadata(Chl_b_mg_m2, data_unit = "ug cm-2"),
+    leaf_chltot_per_area = add_metadata(Chl_a_plus_b_mg_m2, data_unit = "ug cm-2"),
+    leaf_cartot_per_area = add_metadata(Tot_Car_mg_m2, data_unit = "ug cm-2"),
     leaf_area = add_metadata(Total_area_m2, data_unit = "m2"),
-    year = 2015, 
+    year = 2015,
     sitecode = "Barrow"
   ) %>%
   select(SampleName, year, sitecode, starts_with("leaf"))
@@ -134,9 +138,13 @@ pigments <- read_excel(pigments_file, sheet = 2) %>%
 # Get other trait data from 2013
 traits2013 <- speclist[["2013"]] %>%
   select(-starts_with('Wave')) %>%
+  mutate_at(
+    c("Chl_a_g_m2", "Chl_b_g_m2"),
+    ~udunits2::ud.convert(., "g m-2", "ug cm-2")
+  ) %>%
   mutate(
-    leaf_chla_per_area = add_metadata(Chl_a_g_m2, data_unit = "g m-2"),
-    leaf_chlb_per_area = add_metadata(Chl_b_g_m2, data_unit = "g m-2"),
+    leaf_chla_per_area = add_metadata(Chl_a_g_m2, data_unit = "ug cm-2"),
+    leaf_chlb_per_area = add_metadata(Chl_b_g_m2, data_unit = "ug cm-2"),
     leaf_chltot_per_area = leaf_chla_per_area + leaf_chlb_per_area,
     leaf_N_per_area = add_metadata(Narea_gN_m2, data_unit = "g m-2"),
     leaf_mass_per_area = add_metadata(LMA_gDW_m2, data_unit = "g m-2"),

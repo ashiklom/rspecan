@@ -53,7 +53,7 @@ metadata <- file.path(datapath, "Brazil_Trait_Data_filter_v1.csv") %>%
   left_join(species_info) %>%
   mutate(
     leaf_mass_per_area = add_metadata(1 / SLA_m2_kg, data_unit = "kg m-2"),
-    leaf_water_pct_mass = add_metadata(Water_Perc, data_unit = "%"),
+    leaf_water_pct_mass = add_metadata(Water_Perc, data_unit = ""),
     leaf_water_thickness = leaf_mass_per_area * leaf_water_pct_mass %>%
       add_metadata(data_unit = "kg m-2"),
     collection_date = mdy(Day) %>% as.POSIXct(),
