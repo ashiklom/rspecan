@@ -6,8 +6,8 @@ raw_results <- read_csv("spectra_db/all_results.csv") %>%
 results <- raw_results %>%
   filter(
     !(parameter == "N" & Mean > 12),
-    !(parameter == "Cab" & Mean > 600),
-    !(parameter == "Car" & Mean > 500),
+    !(parameter == "Cab" & Mean > 200),
+    !(parameter == "Car" & Mean > 100),
     !(parameter == "Cw" & Mean > 0.2),
     !(parameter == "Cm" & Mean > 0.2)
   )
