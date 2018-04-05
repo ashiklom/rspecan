@@ -12,27 +12,27 @@ clim_data <- readRDS(infile("extdata", "worldclim_met.rds")) %>%
   )
 
 sites <- get_metadata(indir("spectra_db")) %>%
-  distinct(project_code, latitude, longitude) %>%
+  distinct(project_code, short_name, latitude, longitude) %>%
   filter(!is.na(latitude), !is.na(longitude)) %>%
   left_join(clim_data %>% select(latitude, longitude, AMT, AP))
 
 project_colors <- read_csv(infile("spectra_db", "project_colors.csv"))
 
-ggplot() +
+plt <- ggplot() +
   geom_polygon(
     data = biome_polygons,
     mapping = aes(x = temp_degC, y = prec_mm, fill = biome)
   ) +
   geom_point(
     data = sites,
-    mapping = aes(x = AMT, y = AP, color = project_code)
+    mapping = aes(x = AMT, y = AP, color = short_name)
   ) +
   geom_label(
     data = biome_labels,
     mapping = aes(x = y, y = x, label = biome_label)
   ) +
   scale_fill_manual(values = df2dict(biome_labels, "color", "biome") %>% as.character()) +
-  scale_color_manual(values = df2dict(project_colors, "color", "project_code")) +
+  scale_color_manual(values = df2dict(project_colors, "color", "short_name")) +
   xlab(expression("Annual mean temperature" ~ (degree * C))) +
   ylab("Annual precipitation (mm)") +
   guides(fill = FALSE) +
@@ -43,6 +43,7 @@ ggplot() +
 
 ggsave(
   infile("manuscript", "figures", "data_climate.pdf"),
+  plt,
   width = 10,
   height = 7,
   units = "in"
