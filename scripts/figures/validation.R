@@ -53,7 +53,7 @@ validate <- function(specparam, trueparam, coords_list = list()) {
 
   lm_form <- paste(trueparam, "~", "Mean")
   lm_byproject <- dat_sub %>%
-    group_by(short_name) %>%
+    group_by(short_name, prospect_version) %>%
     nest() %>%
     mutate(
       lmfit = map(data, ~lm(formula(lm_form), data = .)),
@@ -65,6 +65,7 @@ validate <- function(specparam, trueparam, coords_list = list()) {
     ) %>%
     select(
       `Project` = short_name,
+      `PROSPECT version` = prospect_version,
       `Slope` = slope,
       `Intercept` = intercept,
       `R2` = r2,

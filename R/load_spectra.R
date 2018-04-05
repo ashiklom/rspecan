@@ -29,10 +29,6 @@ load_spectra <- function(project_code,
 
   spec <- read_spectra(spectra_path)
 
-  types <- PEcAnRTM::spectra_types(spec)
-  itypes <- which(types %in% spectra_types)
-  spec <- spec[, itypes]
-
   waves <- PEcAnRTM::wavelengths(spec)
   lwaves <- rep(TRUE, length(waves))
   if (!is.null(wl_min)) {
