@@ -17,10 +17,10 @@ Imports:
     fs,
     metar,
     progress,
-    here
+    here,
+    cowplot
 Suggests:
     testthat,
-    cowplot,
     import,
     ggsci
 License: MIT

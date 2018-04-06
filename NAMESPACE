@@ -2,8 +2,10 @@
 
 export("%>%")
 export(add_spectra_column)
+export(censor_if)
 export(col_process)
 export(col_rename)
+export(create_legend)
 export(create_project)
 export(dat2specmat)
 export(df2dict)
