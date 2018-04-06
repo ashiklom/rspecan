@@ -245,6 +245,7 @@ plots <- samples_raw %>%
     )
 
 metadata <- samples_raw %>%
+  select(-latitude, -longitude) %>%
   left_join(plots) %>%
   mutate(
     instrument_code = "unknown",

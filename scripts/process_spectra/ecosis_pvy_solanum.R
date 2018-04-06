@@ -37,7 +37,7 @@ dat <- dat_sub %>%
     is_experiment = TRUE,
     year = 2014,
     latitude = 21.31,
-    longitude = 157.86,
+    longitude = -157.86,
     instrument_code = "svc-hr"
   ) %>%
   add_metadata(
