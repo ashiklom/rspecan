@@ -1,3 +1,4 @@
+#!/usr/bin/env Rscript
 library(tidyverse)
 library(rspecan)
 import::from("metar", "write_csvy")

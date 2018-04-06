@@ -1,5 +1,6 @@
 library(rspecan)
 library(tidyverse)
+import::from(metar, read_csvy)
 
 data(biome_labels, biome_polygons, package = "rspecan")
 
@@ -11,12 +12,13 @@ clim_data <- readRDS(infile("extdata", "worldclim_met.rds")) %>%
     AP = AP / 10
   )
 
-sites <- get_metadata(indir("spectra_db")) %>%
+sites <- read_csvy(infile("spectra_db", "cleaned_metadata.csvy")) %>%
   distinct(project_code, short_name, latitude, longitude) %>%
   filter(!is.na(latitude), !is.na(longitude)) %>%
   left_join(clim_data %>% select(latitude, longitude, AMT, AP))
 
-project_colors <- read_csv(infile("spectra_db", "project_colors.csv"))
+project_colors <- read_csv(infile("spectra_db", "project_colors.csv")) %>%
+  semi_join(sites)
 
 plt <- ggplot() +
   geom_polygon(
