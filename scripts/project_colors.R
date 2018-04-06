@@ -3,7 +3,7 @@ library(tidyverse)
 import::from("ggsci", "pal_ucscgb")
 
 specdb <- indir("spectra_db")
-dat <- get_metadata(specdb)
+dat <- read_csvy(infile(specdb, "cleaned_metadata.csv"))
 
 proj_colors <- dat %>%
   distinct(project_code, short_name) %>%

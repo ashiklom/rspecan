@@ -6,7 +6,7 @@ import::from("knitr", "kable")
 figdir <- indir("manuscript", "figures")
 
 results <- read_csv("spectra_db/cleaned_results.csv")
-metadata <- get_metadata("spectra_db")
+metadata <- read_csvy("spectra_db/cleaned_metadata.csvy")
 species_info <- read_csvy("spectra_db/species_info.csvy")
 
 project_colors <- read_csv("spectra_db/project_colors.csv") %>%
@@ -27,8 +27,11 @@ md_sub <- metadata %>%
 dat <- left_join(results, md_sub) %>%
   filter(!is.na(short_name))
 
-specparam <- "Cab"
-trueparam <- "leaf_chltot_per_area"
+if (interactive()) {
+  specparam <- "Cab"
+  trueparam <- "leaf_chltot_per_area"
+  coords_list <- list()
+}
 
 validate <- function(specparam, trueparam, coords_list = list()) {
   trueparam_q <- rlang::sym(trueparam)
@@ -56,7 +59,7 @@ validate <- function(specparam, trueparam, coords_list = list()) {
     group_by(short_name, prospect_version) %>%
     nest() %>%
     mutate(
-      lmfit = map(data, ~lm(formula(lm_form), data = .)),
+      lmfit = map(data, lm, formula = formula(lm_form)),
       coefs = map(lmfit, coef),
       slope = map_dbl(coefs, "Mean"),
       intercept = map_dbl(coefs, "(Intercept)"),

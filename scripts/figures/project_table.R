@@ -1,11 +1,9 @@
 library(tidyverse)
 library(rspecan)
 import::from("knitr", "kable")
+import::from("metar", "read_csvy")
 
-dat <- get_metadata(
-  indir("spectra_db"),
-  metadata_cols = c("project_code", "short_name", "long_name")
-)
+dat <- read_csvy("spectra_db/cleaned_metadata.csvy")
 
 dat_proj <- dat %>%
   group_by(short_name, long_name) %>%

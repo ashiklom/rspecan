@@ -2,7 +2,7 @@ library(tidyverse)
 library(rspecan)
 library(metar)
 
-dat <- get_metadata(indir("spectra_db"))
+dat <- read_csvy(infile("spectra_db", "cleaned_metadata.csvy"))
 
 spp <- dat %>%
   count(short_name, species_code, sort = TRUE) %>%
@@ -23,6 +23,7 @@ ggplot(spp) +
     axis.ticks.x = element_blank(),
     panel.grid.major.x = element_blank(),
     legend.position = "bottom"
-  )
+  ) -> plt
 
-ggsave(infile("manuscript", "figures", "species_counts.pdf"), width = 8, height = 6)
+ggsave(infile("manuscript", "figures", "species_counts.pdf"), plt,
+       width = 8, height = 6)

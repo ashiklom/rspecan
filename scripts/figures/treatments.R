@@ -7,35 +7,50 @@ variable_df <- tribble(
   "N", "# meso",
   "Cab", "Chl.",
   "Car", "Car.",
+  "Canth", "Anth.",
   "Cw", "Water",
   "Cm", "LDMC"
 )
 
 results <- read_csv("spectra_db/cleaned_results.csv")
-metadata <- get_metadata("spectra_db")
+metadata <- read_csvy("spectra_db/cleaned_metadata.csvy")
 results_raw <- results %>%
   filter(prospect_version == "D", parameter != "residual") %>%
   mutate(parameter = factor(parameter, unique(parameter))) %>%
+  mutate_if(is.character, na_if, "") %>%
   select(project_code, observation_id, parameter, Mean) %>%
   spread(parameter, Mean) %>%
   left_join(metadata)
 
 treatments <- tribble(
   ~code, ~shortname,
-  "treatment_temperature", "Warming",
-  "treatment_water", "Drought stress",
+  "treatment_temperature", "Milkweed - Warming",
+  "treatment_water", "Milkweed - Drought",
   "dv_needle_condition",  "Needle damage",
-  "bark_beetle_infested", "Bark beetle infested",
   "treatment_soy",  "Soy treatment",
-  "PVY_infected", "Solanum PVY infected"
+  "PVY_infected", "Potato virus",
+  "sun_shade", "Shade leaf"
 )
 
-treatment_levels <- c(
-  "green", "ozone", "scale_insect", "sucking_insect", "winter_fleck",
-  "healthy", "infected",
-  "C", "L", "M", "H",
-  "23", "30",
-  "Well-watered", "Water stressed"
+treatment_levels <- tribble(
+  ~shortname, ~tcode, ~tshortname,
+  "Needle damage", "green", "Green",
+  "Needle damage", "ozone", "Ozone",
+  "Needle damage", "scale_insect", "Scale insect",
+  "Needle damage", "sucking_insect", "Sucking insect",
+  "Needle damage", "winter_fleck", "Winter fleck",
+  "Potato virus", "healthy", "Healthy",
+  "Potato virus", "infected", "Infected",
+  "Soy treatment", "C", "Control",
+  "Soy treatment", "L", "Low",
+  "Soy treatment", "M", "Medium",
+  "Soy treatment", "H", "High",
+  "Milkweed - Warming", "23", "Normal temperature",
+  "Milkweed - Warming", "30", "Warmer",
+  "Milkweed - Drought", "Well-watered", "Well-watered",
+  "Milkweed - Drought", "Water stressed", "Water stressed",
+  "Shade leaf", "sun", "Sun",
+  "Shade leaf", "shade", "Shade"
 )
 
 treatment_dat <- results_raw %>%
@@ -43,17 +58,21 @@ treatment_dat <- results_raw %>%
   filter(is.na(dv_needle_condition) | dv_needle_condition != "random") %>%
   mutate(treatment_soy = if_else(treatment_soy == "l", "L", treatment_soy)) %>%
   mutate_at(variable_df$code, ~. / mean(., na.rm = TRUE) * 100) %>%
-  select(N, Cab, Car, Cw, Cm,
-         species_code, !!!df2dict(treatments, "code", "shortname"))
+  select(
+    !!!variable_df$code,
+    species_code,
+    !!!df2dict(treatments, "code", "shortname")
+  )
 
 treatment_long <- treatment_dat %>%
   gather("treatment_type", "treatment_value", treatments$shortname, na.rm = TRUE) %>%
-  mutate(treatment_value = factor(treatment_value, treatment_levels))
+  mutate(treatment_value = factor(treatment_value, treatment_levels$tcode) %>% lvls_revalue(treatment_levels$tshortname))
 treatment_mod <- treatment_long %>%
   group_by(treatment_type) %>%
   nest()
 
 fit_var <- function(dat, variable) {
+  dat <- filter(dat, !is.na(treatment_value))
   if (n_distinct(dat$species_code) > 1) {
     form_string <- paste(variable, "~ treatment_value + species_code")
   } else {
@@ -65,6 +84,7 @@ fit_var <- function(dat, variable) {
     mutate(
       variable = !!variable,
       term = gsub("treatment_value", "", term),
+      estimate = round(estimate, 1),
       plevel := sign(estimate) * case_when(
         p.value < 0.05 ~ 0.95,
         p.value < 0.1 ~ 0.9,
@@ -82,11 +102,11 @@ fit_all_vars <- function(dat) {
     mutate(
       variable = factor(variable, variables) %>%
         lvls_revalue(variable_df[["shortname"]]),
-      term = factor(term, treatment_levels)
+      term = factor(term, treatment_levels$tshortname)
     )
 }
 
-#debug(fit_var)
+#undebug(fit_var)
 
 treatment_fit <- treatment_mod %>%
   mutate(mod_fit = map(data, fit_all_vars)) %>%
