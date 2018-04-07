@@ -10,6 +10,16 @@ raw_results <- read_csv("spectra_db/all_results.csv") %>%
   filter(project_code != "barnes_2017") %>%
   bind_rows(barnes_results)
 
+all_md <- get_metadata(
+  "spectra_db",
+  metadata_cols = c("project_code", "short_name", "long_name")
+)
+
+drop_md <- all_md %>%
+  filter(
+    target_type %in% c("rock", "soil") | fresh_dry == "dry"
+  )
+
 drop_results <- raw_results %>%
   select(project_code, observation_id, prospect_version, parameter, Mean) %>%
   spread(parameter, Mean) %>%
@@ -19,8 +29,10 @@ drop_results <- raw_results %>%
   ) %>%
   distinct(project_code, observation_id, prospect_version)
 
-results <- anti_join(raw_results, drop_results)
-bad_results <- semi_join(raw_results, drop_results)
+results <- raw_results %>%
+  anti_join(drop_results) %>%
+  anti_join(drop_md)
+bad_results <- anti_join(raw_results, results)
 
 if (interactive()) {
   ggplot(results) +
@@ -29,12 +41,8 @@ if (interactive()) {
     facet_wrap(~parameter, scales = "free")
 }
 
-all_md <- get_metadata(
-  "spectra_db",
-  metadata_cols = c("project_code", "short_name", "long_name")
-)
-md <- anti_join(all_md, drop_results)
-bad_md <- semi_join(all_md, drop_results)
+md <- semi_join(all_md, results)
+bad_md <- anti_join(all_md, results)
 
 write_csv(results, "spectra_db/cleaned_results.csv")
 write_csv(bad_results, "spectra_db/bad_results.csv")
