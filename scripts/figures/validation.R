@@ -77,10 +77,8 @@ valid_plot <- function(dat) {
     theme_bw()
 }
 
-fit_project_error <- function(dat) {
-  dat %>%
-    group_by(short_name, prospect_version) %>%
-    nest() %>%
+fit_error <- function(nested_dat) {
+  nested_dat %>%
     mutate(
       lmfit = map(data, lm, formula = observed ~ Mean),
       coefs = map(lmfit, coef),
@@ -88,7 +86,20 @@ fit_project_error <- function(dat) {
       intercept = map_dbl(coefs, "(Intercept)"),
       r2 = map2_dbl(lmfit, data, modelr::rsquare),
       mae = map(data, "error") %>% map_dbl(mean, na.rm = TRUE)
-    ) %>%
+    )
+}
+
+fit_project_error <- function(dat) {
+  by_proj <- dat %>%
+    group_by(short_name, prospect_version) %>%
+    nest() %>%
+    fit_error()
+  by_all <- dat %>%
+    group_by(prospect_version) %>%
+    nest() %>%
+    fit_error() %>%
+    mutate(project_code = "all", short_name = "Overall")
+  bind_rows(by_all, by_proj) %>%
     select(
       `Project` = short_name,
       `PROSPECT version` = prospect_version,
@@ -96,7 +107,8 @@ fit_project_error <- function(dat) {
       `Intercept` = intercept,
       `R2` = r2,
       `MAE` = mae
-    )
+    ) %>%
+    mutate(Project = factor(Project) %>% fct_relevel("Overall"))
 }
 
 plot_project_error <- function(proj_err) {
@@ -135,10 +147,12 @@ prosp_leg <- create_legend(
   theme_bw() + theme(legend.position = "bottom")
 )
 
+png("/dev/null")
 pgrid <- do.call(
   plot_grid,
   c(plots$plot_proj_err, list(nrow = 2))
 )
+dev.off()
 
 pdf(infile(figdir, "project_validation_summary.pdf"))
 plot_grid(pgrid, prosp_leg, nrow = 2, rel_heights = c(1, 0.1))

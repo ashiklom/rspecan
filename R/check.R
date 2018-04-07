@@ -15,7 +15,10 @@ check_metadata <- function(metadata) {
   )
 
   trait_units <- metadata %>%
-    dplyr::select(dplyr::starts_with("leaf_"), -dplyr::matches("leaf_age")) %>%
+    dplyr::select(
+      dplyr::starts_with("leaf_"),
+      -dplyr::matches("leaf_age|leaf_temperature")
+    ) %>%
     purrr::map(metar::metadata) %>%
     purrr::map_chr("data_unit", .default = NA_character_)
 

@@ -1,6 +1,7 @@
 library(rspecan)
 library(tidyverse)
 library(PEcAnRTM)
+library(metar)
 import::from("here", "here")
 
 config_file <- here("scripts/process_spectra/config.R")
@@ -46,46 +47,56 @@ common_metadata <- tibble(
   is_experiment = TRUE
 )
 
-spec_files <- fs::path(data_root, "3_Spectral_data") %>% fs::dir_ls()
+spec_data <- fs::path(data_root, "PROCESSED", "9_processed_hyperspectral_wide") %>%
+  read_csv()
 
-metadata_all <- tibble(filename = fs::path_file(spec_files)) %>%
-  mutate(spectra_id = str_remove(filename, ".asd.txt$")) %>%
-  separate(
-    spectra_id,
-    c("drop_all", "tag_leaf", "drop_leaf", "month", "day", "year_id"),
-    remove = FALSE
+obs_ids <- spec_data$uniqueID
+wave_rxp <- "X[[:digit:]]{3,4}"
+waves <- colnames(spec_data) %>%
+  str_subset(wave_rxp) %>%
+  str_remove("^X") %>%
+  as.numeric()
+
+spectra <- spec_data %>%
+  select(matches(wave_rxp)) %>%
+  as.matrix() %>%
+  t() %>%
+  `colnames<-`(obs_ids) %>%
+  spectra(waves, "R")
+
+proc_data <- fs::path(data_root, "PROCESSED", "8_merged_dataset.csv") %>%
+  read_csv() %>%
+  select(
+    observation_id = uniqueID,
+    Plant_ID = Plant_ID.x,
+    collection_date = Date.x,
+    leaf_Vcmax_area = Vcmax,
+    leaf_Jmax_area = Jmax,
+    #leaf_Rd, <-- Dropping because unsure about the units
+    #leaf_water_thickness = LWC, <- Dropping because unsure about the units
+    leaf_water_potential = Water_Pot,
+    leaf_temperature = Leaf_T,
+    air_temperature = Air_T,
+    delta_temperature = Delta_T,
+    vapor_pressure_deficit = VPD,
+    Genotype,
+    Average_Thickness,
+    Par_Total,
+    Wind_Speed
   ) %>%
   mutate(
-    tag_tree = str_extract(tag_leaf, "[[:alpha:]]"),
-    day = as.numeric(day),
-    month = as.numeric(month),
-    year = str_extract(year_id, "^[[:digit:]]{4}") %>% as.numeric(),
-    collection_date = as.POSIXct(ISOdate(year, month, day)),
-    observation_id = paste(
-      "barnes",
-      tag_leaf,
-      strftime(collection_date, "%Y-%m-%d"),
-      sep = "_"
-    )
+    collection_date = lubridate::mdy(collection_date),
+    year = lubridate::year(collection_date)
   ) %>%
-  select(-spectra_id, -filename, -day, -month, -drop_all, -drop_leaf) %>%
-  select(observation_id, everything()) %>%
+  add_column_metadata(
+    leaf_Vcmax_area = list(data_unit = "umol m-2 s-1"),
+    leaf_Jmax_area = list(data_unit = "umol m-2 s-1"),
+    leaf_water_potential = list(data_unit = "MPa")
+  )
+
+metadata <- proc_data %>%
   add_column(!!!common_metadata) %>%
-  metar::add_metadata(!!!project_list)
-
-metadata <- distinct(metadata_all, observation_id, .keep_all = TRUE)
-
-message("Reading spectra data")
-spec_list <- map(spec_files, read_tsv, col_types = "nn")
-message("Merging spectra data")
-spec_data <- reduce(spec_list, full_join, by = "Wavelength")
-
-spec_mat <- spec_data %>% select(-Wavelength) %>% as.matrix()
-colnames(spec_mat) <- metadata_all$observation_id
-waves <- pull(spec_data, "Wavelength")
-
-spectra <- spectra(spec_mat, waves, spectra_types = "R")
-spectra[spectra > 1 | spectra < 0] <- NA
+  add_metadata(!!!project_list)
 
 message("Creating specdb project")
 create_project(

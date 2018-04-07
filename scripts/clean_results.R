@@ -3,8 +3,12 @@ library(tidyverse)
 library(rspecan)
 import::from("metar", "write_csvy")
 
+barnes_results <- read_csv("spectra_db/barnes_results.csv")
+
 raw_results <- read_csv("spectra_db/all_results.csv") %>%
-  select(-specdb)
+  select(-specdb) %>%
+  filter(project_code != "barnes_2017") %>%
+  bind_rows(barnes_results)
 
 drop_results <- raw_results %>%
   select(project_code, observation_id, prospect_version, parameter, Mean) %>%
