@@ -1,0 +1,20 @@
+#!/bin/bash
+
+FIGURE_SCRIPTS=(\
+    scripts/figures/data_climate.R \
+    scripts/figures/data_map.R \
+    scripts/figures/partition_variability.R \
+    scripts/figures/phenology.R \
+    scripts/figures/project_table.R \
+    scripts/figures/prospect_version_agreement.R \
+    scripts/figures/trait_correlations.R \
+    scripts/figures/treatments.R \
+    scripts/figures/validation.R
+    )
+
+for script in $FIGURE_SCRIPTS; do
+    echo "###############################"
+    echo $script
+    echo "###############################"
+    Rscript $script
+done
