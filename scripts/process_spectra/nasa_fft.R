@@ -115,7 +115,7 @@ raw_cn <- read_csv(path_CN) %>%
     species_data_code = Species,
     leaf_N_pct_mass = Perc_N,
     leaf_C_pct_mass = Perc_C,
-    leaf_CN_ratio_mass = CNRatio
+    leaf_CN_ratio = CNRatio
   )
 
 raw_lma <- read_csv(path_SLA_LMA) %>%
@@ -142,7 +142,7 @@ traits <- list(raw_d15N, raw_lignin, raw_cn, raw_lma) %>%
   ) %>%
   add_column_metadata(
     leaf_dN15 = list(data_unit = ""),
-    leaf_CN_ratio_mass = list(data_unit = ""),
+    leaf_CN_ratio = list(data_unit = ""),
     leaf_mass_per_area = list(data_unit = "g m-2"),
     leaf_water_thickness = list(data_unit = "g cm-2")
   ) %>%

@@ -109,7 +109,7 @@ traits_main <- read_excel(traits_main_file, sheet = 2) %>%
     leaf_C_per_area = add_metadata(C_area_gDW_m2, data_unit = "g m-2"),
     leaf_C_pct_mass = add_metadata(Perc_C, data_unit = "%"),
     leaf_N_pct_mass = add_metadata(Perc_N, data_unit = "%"),
-    leaf_CN_ratio_mass = add_metadata(CN_ratio, data_unit = "")
+    leaf_CN_ratio = add_metadata(CN_ratio, data_unit = "")
   ) %>%
   select(
     SampleName, year, collectiondate, sitecode, speciesdatacode,
@@ -177,12 +177,12 @@ barrow_2016_chn <- read_excel(barrow_2016_chn_file, sheet = 2) %>%
     speciesdatacode = USDA_Species_Code,
     leaf_C_pct_mass = Perc_C,
     leaf_N_pct_mass = Perc_N,
-    leaf_CN_ratio_mass = CN_ratio
+    leaf_CN_ratio = CN_ratio
   ) %>%
   add_column_metadata(
     leaf_C_pct_mass = list(data_unit = "%"),
     leaf_N_pct_mass = list(data_unit = "%"),
-    leaf_CN_ratio_mass = list(data_unit = "")
+    leaf_CN_ratio = list(data_unit = "")
   ) %>%
   mutate(year = 2016, sitecode = "Barrow") %>%
   select(SampleName, speciesdatacode, sitecode, starts_with("leaf"))

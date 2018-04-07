@@ -238,7 +238,7 @@ trait_data <- raw_chn %>%
            leaf_C_pct_mass = Perc_C,
            leaf_H_pct_mass = Perc_H,
            leaf_N_pct_mass = Perc_N) %>%
-    mutate(leaf_CN_ratio_mass = leaf_C_pct_mass / leaf_N_pct_mass) %>%
+    mutate(leaf_CN_ratio = leaf_C_pct_mass / leaf_N_pct_mass) %>%
     inner_join(samples %>% distinct(observation_id, Sample_Name, collection_date)) %>%
     # Keep only unambiguous matches
     group_by(Sample_Name, collection_date) %>%
@@ -275,7 +275,7 @@ metadata <- samples %>%
   ) %>%
   add_column_metadata(
     leaf_mass_per_area = list(data_unit = "g m-2"),
-    leaf_CN_ratio_mass = list(data_unit = "")
+    leaf_CN_ratio = list(data_unit = "")
   ) %>%
   add_metadata(!!!project_metadata) %>%
   glimpse()

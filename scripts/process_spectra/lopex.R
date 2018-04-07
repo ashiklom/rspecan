@@ -65,7 +65,7 @@ lopex_traits <- lopex_raw %>%
     leaf_thickness = LT, leaf_area = A
   ) %>%
   mutate(
-    leaf_CN_ratio_mass = leaf_C_pct_mass / leaf_N_pct_mass,
+    leaf_CN_ratio = leaf_C_pct_mass / leaf_N_pct_mass,
     leaf_protein_pct_mass = (C_prot1 + C_prot2) / 2,
     leaf_cellulose_pct_mass = (C_cell1 + C_cell2) / 2,
     leaf_lignin_pct_mass = (C_lign1 + C_lign2) / 2,
