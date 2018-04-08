@@ -20,6 +20,8 @@ sites <- read_csvy(infile("spectra_db", "cleaned_metadata.csvy")) %>%
 project_colors <- read_csv(infile("spectra_db", "project_colors.csv")) %>%
   semi_join(sites)
 
+sites <- sites %>% semi_join(project_colors)
+
 plt <- ggplot() +
   geom_polygon(
     data = biome_polygons,

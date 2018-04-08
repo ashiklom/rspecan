@@ -12,7 +12,7 @@ FIGURE_SCRIPTS=(\
     scripts/figures/validation.R
     )
 
-for script in $FIGURE_SCRIPTS; do
+for script in ${FIGURE_SCRIPTS[@]}; do
     echo "###############################"
     echo $script
     echo "###############################"
