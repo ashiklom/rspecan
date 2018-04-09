@@ -52,11 +52,28 @@ treatment_levels <- tribble(
   "Climate", "AP", "Annual precip."
 )
 
+normalize <- function(x) {
+  m <- mean(x, na.rm = TRUE)
+  s <- sd(x, na.rm = TRUE)
+  (x - s) / m
+}
+
+format_treat <- function(fitdf) {
+  mutate(
+    fitdf,
+    plevel = sign(estimate) * case_when(
+      p.value < 0.025 ~ 0.95,
+      p.value < 0.05 ~ 0.9,
+      TRUE ~ 0),
+    estimate = round(estimate, 3),
+  )
+}
+
 treatment_dat <- results_raw %>%
   filter_at(tsub$code, any_vars(!is.na(.))) %>%
   filter(is.na(dv_needle_condition) | dv_needle_condition != "random") %>%
   mutate(treatment_soy = if_else(treatment_soy == "l", "L", treatment_soy)) %>%
-  mutate_at(variable_df$code, ~. / mean(., na.rm = TRUE) * 100) %>%
+  mutate_at(variable_df$code, normalize) %>%
   select(
     !!!variable_df$code,
     species_code,
@@ -83,15 +100,9 @@ fit_var <- function(dat, variable) {
     filter(term != "(Intercept)", !grepl("species_code", term)) %>%
     mutate(
       variable = !!variable,
-      term = gsub("treatment_value", "", term),
-      estimate = round(estimate, 1),
-      plevel = sign(estimate) * case_when(
-        p.value < 0.05 ~ 0.95,
-        p.value < 0.1 ~ 0.9,
-        #p.value < 0.25 ~ 0.75,
-        TRUE ~ 0
-      )
-    )
+      term = gsub("treatment_value", "", term)
+    ) %>%
+    format_treat()
 }
 
 fit_all_vars <- function(dat) {
@@ -121,22 +132,15 @@ barnes_mod <- barnes_fit %>%
   ) %>%
   gather(variable, value, !!!variable_df$code) %>%
   group_by(variable) %>%
-  mutate(norm_value = 100 * value / mean(value, na.rm = TRUE)) %>%
+  mutate(norm_value = normalize(value)) %>%
   nest() %>%
   mutate(
     lmfit = map(data, lm, formula = formula(value ~ leaf_temperature + air_temperature + vapor_pressure_deficit)),
     lmtidy = map(lmfit, ~broom::tidy(.) %>% filter(term != "(Intercept)"))
   ) %>%
   unnest(lmtidy) %>%
-  mutate(
-    estimate = round(estimate, 1),
-    plevel = sign(estimate) * case_when(
-      p.value < 0.05 ~ 0.95,
-      p.value < 0.1 ~ 0.9,
-      TRUE ~ 0
-    ),
-    treatment_type = "barnes_2017"
-  )
+  mutate(treatment_type = "barnes_2017") %>%
+  format_treat()
 
 multi_site_spp <- results_raw %>%
   filter(!is.na(species_code)) %>%
@@ -154,7 +158,7 @@ multi_site_dat <- results_raw %>%
   semi_join(multi_site_spp) %>%
   select(project_code, short_name, observation_id, !!!variable_df$code,
          latitude, longitude, species_code) %>%
-  mutate_at(variable_df$code, ~100 * . / mean(., na.rm = TRUE)) %>%
+  mutate_at(variable_df$code, normalize) %>%
   left_join(clim_dat)
 
 clim_nest <- multi_site_dat %>%
@@ -171,15 +175,8 @@ clim_mod <- clim_nest %>%
 clim_tidy <- clim_mod %>%
   unnest(lmtidy) %>%
   filter(term != "(Intercept)", !grepl("species_code", term)) %>%
-  mutate(
-    estimate = round(estimate, 1),
-    plevel = sign(estimate) * case_when(
-      p.value < 0.05 ~ 0.95,
-      p.value < 0.1 ~ 0.9,
-      TRUE ~ 0
-    ),
-    treatment_type = "climate"
-  )
+  mutate(treatment_type = "climate") %>%
+  format_treat()
 
 treatment_plot <- bind_rows(treatment_fit, barnes_mod, clim_tidy) %>%
   mutate(
