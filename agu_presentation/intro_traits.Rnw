@@ -1,0 +1,178 @@
+\section{Introduction - Traits}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \begin{tikzpicture}
+      \node[pic, show = {<2->}] (models) {
+        \includegraphics[height=35mm]{\string ~/Pictures/common_figures/modelforest.png}
+      };
+      \node[below = 2mm of models] (diversity) {\LARGE Functional diversity};
+      \node[pic, below = 2mm of diversity, show = {<3->}] (real forest) {
+        \includegraphics[height=35mm]{\string ~/Pictures/common_figures/diversity_leaves.png}
+      };
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+%TODO: Highlight LMA
+\begin{frame}
+  \begin{figure}
+    \begin{tikzpicture}
+      \node[pic] (diaz figure) {
+        \includegraphics[width=\linewidth]{\string ~/Pictures/common_figures/diaz_2014_nature_a.png}
+      };
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+<<>>=
+read_chunk("sla_plot.R")
+@
+
+<<sla_setup>>=
+@
+
+\begin{frame}
+  \begin{figure}
+    \begin{tikzpicture}[
+      hl/.style = {very thick, draw = red, shape = circle, radius = 5mm},
+      hl line/.style = {very thick, draw = red, ->},
+      lab/.style = {anchor = north, font = {\tiny \itshape}}
+      ]
+      \node[show = {<1>}] {
+<<sla_base>>=
+@
+      };
+      \node[show = {<2>}] {
+<<sla2>>=
+<<sla_base>>
+<<sla_pft1>>
+@
+      };
+      \node[show = {<3>}] {
+<<sla3>>=
+<<sla2>>
+<<sla_pft2>>
+@
+      };
+      \node[show = {<4-6>}] {
+<<sla4>>=
+<<sla3>>
+<<sla_points>>
+@
+      };
+
+      \node[show = {<7>}] {
+<<sla5>>=
+<<sla3>>
+<<sla_box>>
+@
+      };
+      \coordinate (d texana) at (5.15, 2.55);
+      \coordinate (f grandifolia) at (-3.15, -1.60);
+      \coordinate (d texana loc) at (3, 4.1);
+      \coordinate (f grandifolia loc) at (-3.9, 4.1);
+      \begin{scope}[show = {<5,6>}]
+        \node[hl] (d texana hl) at (d texana) {};
+        \node[pic, anchor = north east] (d texana pic) at (d texana loc) {
+          \includegraphics[width=20mm]{\string ~/Pictures/common_figures/diospyros-texana-leaves.jpg}
+        };
+        \node[lab] (d texana lab) at (d texana pic.south) {Diospyros texana};
+        \draw[hl line] (d texana hl.west) -- (d texana pic.east);
+      \end{scope}
+      \begin{scope}[show = {<6>}]
+        \node[hl] (f grandifolia hl) at (f grandifolia) {};
+        \node[pic, anchor = north west] (f grandifolia pic) at (f grandifolia loc) {
+          \includegraphics[width=20mm]{\string ~/Pictures/common_figures/fagus-grandifolia-leaves.jpg}
+        };
+        \node[lab] (f grandifolia lab) at (f grandifolia pic.south) {Fagus grandifolia};
+        \draw[hl line] (f grandifolia hl.north) -- (f grandifolia lab.south);
+      \end{scope}
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+<<map_prep>>=
+@
+
+\begin{frame}
+  \begin{figure}
+    \begin{tikzpicture}[
+      map/.style = {anchor = north, outer sep = 1mm}
+      ]
+      \node[map] (sla map) {
+<<>>=
+<<map_base>>
+<<sla_map>>
+@
+      };
+      \node[map, show = {<2->}] (leafn map) at (sla map.south) {
+<<>>=
+<<map_base>>
+<<leafn_map>>
+@
+      };
+      \node[map, show = {<3->}] (vcmax map) at (leafn map.south) {
+<<>>=
+<<map_base>>
+<<vcmax_map>>
+@
+      };
+      \node[left = of sla map] (sla lab) {Leaf mass per area};
+      \node[show = {<2->}] (leafn lab) at (leafn map -| sla lab) {Leaf N content};
+      \node[show = {<3->}] (vcmax lab) at (vcmax map -| sla lab) {$V_{c, max}$};
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \begin{tikzpicture}[
+      quote/.style = {align = left, font = \small \itshape, anchor = north, text width = 70mm}
+      ]
+      \node[pic] (galadriel) {
+        \includegraphics[width=70mm]{\string ~/Pictures/common_figures/Galadriel_at_her_mirror.png}
+      };
+      \node[quote] (change text) at (galadriel.south) {
+        The world has changed. I~feel it in the water. I~feel it in the earth. I~smell it in the air.
+      };
+      \node[pic, anchor = north west, show = {<3->}] (keeling) at (change text.south) {
+        \includegraphics[height=45mm]{\string ~/Pictures/common_figures/keeling_curve.png}
+      };
+      \node[pic, anchor = east, show = {<2->}] (phenology) at (keeling.west) {
+        \includegraphics[height=20mm]{\string ~/Pictures/common_figures/phenology_leaves.jpg}
+      };
+      \node[pic, below = of keeling, show = {<2>}] {Remote sensing};
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+    \begin{tikzpicture}[
+      pic/.style = {outer sep = 0.5pt}
+      ]
+      \node[pic] (leaf) {
+        \includegraphics[height=25mm]{\string ~/Pictures/common_figures/fagus-grandifolia-leaves.jpg}
+      };
+      \node[pic, anchor = west] (fieldspec) at (leaf.east) {
+        \includegraphics[height=25mm]{\string ~/Pictures/common_figures/FieldSpec-4-Wide-Res-Pistol.jpg}
+      };
+      \node[pic, anchor = north west] (aviris plane) at (leaf.south east) {
+        \includegraphics[height=20mm]{\string ~/Pictures/common_figures/aviris_plane.jpg}
+      };
+      \node[pic, anchor = west] (aviris cube) at (aviris plane.east) {
+        \includegraphics[width=20mm, angle = 90]{\string ~/Pictures/common_figures/aviris_image_cube.jpeg}
+      };
+      \node[pic, anchor = north west, xshift = 3mm] (satellite) at (aviris plane.south east) {
+        \includegraphics[height=30mm]{\string ~/Pictures/common_figures/landsat_picture.jpg}
+      };
+      \node (rs text) at (fieldspec.east -| satellite.north) {\Large Remote sensing};
+      \draw[thick, green!70!black, show = {<2>}] (leaf.south west) rectangle (fieldspec.north east);
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}

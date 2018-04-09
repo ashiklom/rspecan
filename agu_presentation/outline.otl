@@ -1,0 +1,70 @@
+Introduction -- traits
+	Functional diversity
+		I come from the ecosystem modeling world.
+		Ecosystem models say the world looks like this:
+			FIGURE: Simple ecosystem model
+				Popsicle trees
+				Big leaf?
+				ED multi-canopy
+		...but real ecosystems look like this
+			FIGURE: Real ecosystem(s)
+		Each of these trees responds a little bit differently to its environment
+		Driving those differences are differences in traits
+	Plant functional traits
+		Examples of plant functional traits
+			Highlights:
+				LMA
+				Chlorophyll content
+				Vcmax
+			Others:
+				Lignin
+				Cellulose
+				Nitrogen content
+				Etc...
+	Trait variability
+		Deciduous, temperate, early hardwood trees
+		Leaf mass per area
+		FIGURE: LMA variability in TRY
+			ANIMATE: Dashed horizontal line at PFT mean
+			ANIMATE: Across-species variability
+			ANIMATE: Examples (Diospyros texana, Fagus grandifolia)
+			ANIMATE: Within-species variability
+	Lacking in trait measurements
+		SLA is a trait we know pretty well.
+			FIGURE: SLA map
+		Other traits, not so much
+			FIGURE: Vcmax map
+			FIGURE: Other trait maps
+		Even for our best traits, still have large gaps
+			ANIMATE: Circle gaps.
+		Also, no time series of traits.
+			Humor: Galadriel -- "The world has changed. I feel it in the water. I feel it in the Earth. I smell it in the air."
+			FIGURE: Time changes.
+				Keeling curve
+				Land use change
+				Nitrogen fertilization
+		Remote sensing fills in spatial gaps, and provides us with time series.
+Introduction -- remote sensing
+	Spectral signatures
+		Different materials interact with light in different ways
+			FIGURE: Chlorophyll absorption
+			FIGURE: Water absorption
+		This is what a leaf reflectance spectrum looks like
+			FIGURE: Basic spectrum
+		Different parts of the spectrum respond to different 
+	Radiative transfer models
+		RTMs let us predict spectra from reflectance
+			FIGURE: traits -> spectra
+				Conceptual panel with those words
+				Several examples of leaf reflectance sensitivity
+	Basic RTM inversion
+		Parameter likelihood as related to PROSPECT parameters
+			FIGURE: Good vs. bad spectra fits, bar plots of parameters on the side
+	Bayesian inversion
+		Lets us estimate uncertainty
+			FIGURE: Bayesian inversion conceptual figure
+	Research questions
+		1. How well does this work?
+		2. What can we do with it?
+		2a. Can it capture physiological effects of treatments?
+		2b. What does it tell us about ecology?

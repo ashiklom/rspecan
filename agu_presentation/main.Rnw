@@ -1,0 +1,58 @@
+\documentclass{beamer}
+\usetheme{Boadilla}
+\usecolortheme{seagull}
+\usenavigationsymbolstemplate{}
+
+\usepackage{tikz}
+\usetikzlibrary{
+  positioning,
+  calc,
+  fit
+}
+
+\tikzset{
+  majorgrid/.style = {step=1, black, thick},
+  minorgrid/.style = {step=0.5, gray, thin},
+  tinygrid/.style = {step=0.1, gray!50, very thin},
+  pic/.style = {inner sep = 0, outer sep = 0},
+  invisible/.style = {opacity = 0},
+  shaded/.style = {opacity = 0.5},
+  visible/.style = {opacity = 1},
+  rtikz/.style = {x = 1pt, y = 1pt},
+  ampersand replacement = \&,
+  % Selective application of TIKZ styles. E.g.
+  % red, onslide = {<3->{blue}}
+  onslide/.code args = {<#1>#2}{\only<#1>{\pgfkeysalso{#2}}},
+  % Shortcut for hiding on all slides except...
+  show/.style = {invisible, onslide = {#1{visible}}}
+}
+
+\newcommand{\drawgrid}{%
+  \draw[tinygrid] (current bounding box.south west) grid (current bounding box.north east);
+  \draw[minorgrid] (current bounding box.south west) grid (current bounding box.north east);
+  \draw[majorgrid] (current bounding box.south west) grid (current bounding box.north east);
+  \fill[red] (0, 0) circle (1mm);
+}
+
+\title[Leaf optical properties]{Leaf optical properties shed light on foliar trait variability at individual to global scales}
+\author[\textbf{Shiklomanov}, Serbin, Dietze]{\textbf{Alexey Shiklomanov}, Shawn Serbin, Michael Dietze}
+\date{B22C-07}
+
+\begin{document}
+  
+<<setoptions, echo = FALSE, message = FALSE, warning = FALSE>>=
+library(knitr)
+library(tikzDevice)
+opts_chunk$set(
+  echo = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  dev = "pdf"
+)
+@
+
+\Sexpr{knit_child("intro_traits.Rnw")}
+\Sexpr{knit_child("intro_rs.Rnw")}
+\Sexpr{knit_child("analysis.Rnw")}
+
+\end{document}

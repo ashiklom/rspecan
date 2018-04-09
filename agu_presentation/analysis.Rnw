@@ -1,0 +1,231 @@
+\section{Results}
+\againframe<4>{questions}
+
+<<milkweed_setup>>=
+@
+
+\begin{frame}{Milkweed water stress experiment \hfill {\tiny J. Couture, unpublished, in ECOSIS}}
+  \begin{figure}
+    \begin{tikzpicture}
+      \begin{scope}[show = {<2->}]
+        \node[pic] (traits plot) {
+<<field_trait_plot, fig.dim = c(2, 3)>>=
+@
+        };
+        \node[anchor = south] (traits lab) at (traits plot.north) {Field traits};
+      \end{scope}
+      \begin{scope}[show = {<3->}]
+        \node[pic, right = of traits plot] (spec plot) {
+<<spec_trait_plot, fig.dim = c(2, 3)>>=
+@
+        };
+        \node[anchor = south] (spec lab) at (spec plot.north) {``Optical'' traits};
+      \end{scope}
+      \coordinate (water box) at (3.8, -1.8);
+      \coordinate (chl box) at (6.4, 2);
+      \coordinate (car box) at (3.8, 0.1);
+      \begin{scope}[very thick, draw = red, show = {<4->}]
+        \foreach \point in {water box, chl box, car box}
+        \draw (\point) rectangle +(2.4, 1.8);
+      \end{scope}
+      \node[pic, show = {<5->}, anchor = south] (milkweed spec) at (spec plot.south) {
+<<milkweed_spec_plot, fig.dim = c(1.6, 0.77)>>=
+@
+      };
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+<<fertilization_setup>>=
+@
+
+\begin{frame}{Nitrogen fertilization experiment \hfill {\tiny A.\ Mazur, unpublished, in ECOSIS}}
+  \begin{figure}
+    \begin{tikzpicture}
+      \node[pic] (fert plot) {
+<<fertilization_plot, fig.dim = c(2, 2.8)>>=
+@
+      };
+      \node[anchor = south] at (fert plot.north) {``Optical'' traits};
+      \node[pic, anchor = north west] (fert spec) at (fert plot.north east) {
+<<fertilization_spec, fig.dim = c(2, 2)>>=
+@
+      };
+      \node[pic, anchor = north] (fert legend) at (fert spec.south) {
+<<fertilization_legend, fig.dim = c(1.3, 0.7)>>=
+@
+      };
+      \coordinate (car box) at (-2.5, -1.05);
+      \coordinate (canth box) at (0, -1.05);
+      \coordinate (cab box) at (0, 1.3);
+      \coordinate (cm box) at (0, -3.4);
+      \begin{scope}[thick, show = {<2->}]
+        \foreach \point in {car box, canth box}
+        \draw[thick, blue] (\point) rectangle +(2.4, 2.2);
+        \foreach \point in {cab box, cm box}
+        \draw[thick, red] (\point) rectangle +(2.4, 2.2);
+      \end{scope}
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+<<needle_setup>>=
+@
+
+\begin{frame}{Needle damage \hfill {\tiny Di Vittorio \& Biging 2009 IJRS}}
+  \begin{figure}
+    \begin{tikzpicture}
+      \node[pic] (needle plot) {
+<<needle_plot, fig.dim = c(2.5, 2.8)>>=
+@
+      };
+      \node[pic, anchor = north] (needle legend) at (needle plot.south) {
+<<needle_legend, fig.dim = c(2.5, 0.4)>>=
+@
+      };
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+<<>>=
+read_chunk("phenology.R")
+@
+
+<<>>=
+<<pheno_prep>>
+w <- 1.5
+h <- 3.1
+pheno_dim <- c(w, h)
+@
+
+\begin{frame}{Phenology \hfill {\tiny Yang et al.\ 2016 RSE}}
+  \begin{figure}
+    \begin{tikzpicture}
+      \node[pic] (cab pheno) {
+<<pheno_cab, fig.dim = pheno_dim>>=
+@
+      };
+      \node[pic, anchor = west] (car pheno) at (cab pheno.east) {
+<<pheno_car, fig.dim = pheno_dim>>=
+@
+      };
+      \node[pic, anchor = west] (canth pheno) at (car pheno.east) {
+<<pheno_canth, fig.dim = pheno_dim>>=
+@
+      };
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+<<>>=
+read_chunk("ecology.R")
+@
+
+<<>>=
+<<anova_setup>>
+h <- 4.35
+w <- 3.1
+anova_dim <- c(h, w)
+@
+
+\begin{frame}{What drives optical trait variability?}
+  \begin{figure}
+    \begin{tikzpicture}
+      \node[pic] (anova) {
+<<anova_plot, fig.dim = anova_dim>>=
+@
+      };
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+\againframe<5>{questions}
+
+<<>>=
+read_chunk("validation.R")
+@
+
+<<>>=
+<<validation_setup>>
+w <- 4.35
+main_dim <- c(w, 2.5)
+leg_dim <- c(w, 1.0)
+@
+
+\begin{frame}
+  \begin{figure}
+    \begin{tikzpicture}
+      \node[pic, show = {<1>}] (chl valid) at (0, 0) {
+<<validation_chl, fig.dim = main_dim>>=
+@
+      };
+      \node[pic, show = {<2>}] (chl r2) at (0, 0) {
+<<r2_chl, fig.dim = main_dim>>=
+@
+      };
+      \node[pic, show = {<3>}] (all r2) at (0, 0) {
+<<r2_all, fig.dim = main_dim>>=
+@
+      };
+      \node[pic, anchor = north] (project legend) at (chl valid.south) {
+<<project_legend, fig.dim = c(4.35, 1.0)>>=
+@
+      };
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+\begin{frame}[label=summary]{Summary}
+  \begin{figure}
+    \begin{tikzpicture}
+      \matrix{
+        \node[show = {<1->}] {Plant functional diversity}; \&
+        \node[pic, show = {<1->}] {
+          \includegraphics[height=15mm]{\string ~/Pictures/common_figures/diaz_2014_nature_a.png}
+        }; \\
+        \node[show = {<2->}] {Remote sensing of traits}; \&
+        \node[pic, show = {<2->}] {
+<<sig_plot, fig.dim = sig_dim05, out.height = "15mm", out.extra="keepaspectratio">>=
+@
+        }; \\
+        \node[show = {<3->}] {Applications of RTM inversion}; \&
+        \node[pic, show = {<3->}] {
+<<fertilization_plot, fig.dim = c(2, 2.8), out.height = "15mm", out.extra="keepaspectratio,clip,trim={0 1.9in 0 0}">>=
+@
+        }; \\
+        \node[show = {<4->}] {Pitfalls of RTM inversion}; \&
+        \node[pic, show = {<4->}] (pitfalls) {
+<<validation_chl, fig.dim = main_dim, out.height = "20mm", out.extra = "keepaspectratio">>=
+@
+        };
+        \fill[white, visible, onslide = {<4->{invisible}}] (pitfalls.south east) rectangle (pitfalls.north west); \\
+      };
+    \end{tikzpicture}
+  \end{figure}
+\end{frame}
+
+\begin{frame}{Acknowledgements}
+  \begin{columns}[t]
+    \begin{column}{0.5\textwidth}
+      \textbf{Co-authors and collaborators}
+      \begin{itemize}
+        \item Michael Dietze, Boston University
+        \item Shawn Serbin, Brookhaven National Lab
+        \item Alan Di Vittorio, Berkeley Lab
+        \item Adrianna Foster, NASA GSFC
+        \item ECOSIS team, U. Wisconsin and U. Minnesota
+        \item PEcAn team
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.5\textwidth}
+      \textbf{Funding}
+      \begin{itemize}
+        \item Boston University Department of Earth \& Environment
+        \item NASA Grant NNX14AH65G
+        \item NASA Earth \& Space Science Fellowship (NNX16AO13H)
+      \end{itemize}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+\againframe<4>{summary}
