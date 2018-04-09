@@ -1,0 +1,107 @@
+biome;merged_biome;temp_degC;prec_mm;id
+Subtropical desert;Subtropical;29.339;2.13;1
+Subtropical desert;Subtropical;13.971;2.3000000000000003;2
+Subtropical desert;Subtropical;15.371;17.46;3
+Subtropical desert;Subtropical;17.51;53.51;4
+Subtropical desert;Subtropical;24.131;70.28999999999999;5
+Subtropical desert;Subtropical;27.074;84.78999999999999;6
+Subtropical desert;Subtropical;28.915;99.24;7
+Subtropical desert;Subtropical;29.201;53.209999999999994;8
+Subtropical desert;Subtropical;29.339;2.13;9
+Temperate grassland desert;Temperate;13.971;2.3000000000000003;10
+Temperate grassland desert;Temperate;-9.706;0.73;11
+Temperate grassland desert;Temperate;-7.572;8.72;12
+Temperate grassland desert;Temperate;4.491;31.46;13
+Temperate grassland desert;Temperate;17.51;53.51;14
+Temperate grassland desert;Temperate;15.371;17.46;15
+Temperate grassland desert;Temperate;13.971;2.3000000000000003;16
+Woodland shrubland;Mediterranean;17.51;53.51;17
+Woodland shrubland;Mediterranean;4.491;31.46;18
+Woodland shrubland;Mediterranean;-7.572;8.72;19
+Woodland shrubland;Mediterranean;-9.706;0.73;20
+Woodland shrubland;Mediterranean;-6.687;20.259999999999998;21
+Woodland shrubland;Mediterranean;-0.949;39.17;22
+Woodland shrubland;Mediterranean;3.098;52.99;23
+Woodland shrubland;Mediterranean;7.147;78.31;24
+Woodland shrubland;Mediterranean;10.165;95.69000000000001;25
+Woodland shrubland;Mediterranean;13.918;111.64999999999999;26
+Woodland shrubland;Mediterranean;18.626;126.92999999999999;27
+Woodland shrubland;Mediterranean;18.176;79.42999999999999;28
+Woodland shrubland;Mediterranean;17.51;53.51;29
+Temperate forest;Temperate;18.626;126.92999999999999;30
+Temperate forest;Temperate;13.918;111.64999999999999;31
+Temperate forest;Temperate;10.165;95.69000000000001;32
+Temperate forest;Temperate;7.147;78.31;33
+Temperate forest;Temperate;3.098;52.99;34
+Temperate forest;Temperate;-0.949;39.17;35
+Temperate forest;Temperate;1.039;51.48;36
+Temperate forest;Temperate;1.998;67.34;37
+Temperate forest;Temperate;2.444;96.85000000000001;38
+Temperate forest;Temperate;3.118;163.06;39
+Temperate forest;Temperate;4.446;183.96999999999997;40
+Temperate forest;Temperate;7.758;202.8;41
+Temperate forest;Temperate;12.614;222.39999999999998;42
+Temperate forest;Temperate;18.72;235.57;43
+Temperate forest;Temperate;18.637;183.76000000000002;44
+Temperate forest;Temperate;18.626;126.92999999999999;45
+Boreal forest;Boreal;-0.949;39.17;46
+Boreal forest;Boreal;-6.687;20.259999999999998;47
+Boreal forest;Boreal;-4.395;92.28999999999999;48
+Boreal forest;Boreal;-4.098;107.41;49
+Boreal forest;Boreal;-1.592;140.59;50
+Boreal forest;Boreal;0.914;174.49;51
+Boreal forest;Boreal;4.155;201.23000000000002;52
+Boreal forest;Boreal;3.118;163.06;53
+Boreal forest;Boreal;2.444;96.85000000000001;54
+Boreal forest;Boreal;1.998;67.34;55
+Boreal forest;Boreal;1.039;51.48;56
+Boreal forest;Boreal;-0.949;39.17;57
+Temperate rain forest;Temperate;18.72;235.57;58
+Temperate rain forest;Temperate;12.614;222.39999999999998;59
+Temperate rain forest;Temperate;7.758;202.8;60
+Temperate rain forest;Temperate;4.446;183.96999999999997;61
+Temperate rain forest;Temperate;3.118;163.06;62
+Temperate rain forest;Temperate;4.155;201.23000000000002;63
+Temperate rain forest;Temperate;15.716;293.01;64
+Temperate rain forest;Temperate;20.136;337.77;65
+Temperate rain forest;Temperate;19.392;291.70000000000005;66
+Temperate rain forest;Temperate;18.72;235.57;67
+Tropical rain forest;Tropical;18.72;235.57;68
+Tropical rain forest;Tropical;19.392;291.70000000000005;69
+Tropical rain forest;Tropical;20.136;337.77;70
+Tropical rain forest;Tropical;22.278;389.65000000000003;71
+Tropical rain forest;Tropical;23.756;434.30999999999995;72
+Tropical rain forest;Tropical;24.199;441.52;73
+Tropical rain forest;Tropical;24.714;442.98;74
+Tropical rain forest;Tropical;25.667;427.9;75
+Tropical rain forest;Tropical;26.105;411.37;76
+Tropical rain forest;Tropical;27.414;334.44000000000005;77
+Tropical rain forest;Tropical;27.772;279.06;78
+Tropical rain forest;Tropical;25.709;257.4;79
+Tropical rain forest;Tropical;21.736;241.43;80
+Tropical rain forest;Tropical;18.72;235.57;81
+Tropical forest savanna;Tropical;17.51;53.51;82
+Tropical forest savanna;Tropical;18.176;79.42999999999999;83
+Tropical forest savanna;Tropical;18.626;126.92999999999999;84
+Tropical forest savanna;Tropical;18.637;183.76000000000002;85
+Tropical forest savanna;Tropical;18.72;235.57;86
+Tropical forest savanna;Tropical;21.736;241.43;87
+Tropical forest savanna;Tropical;25.709;257.4;88
+Tropical forest savanna;Tropical;27.772;279.06;89
+Tropical forest savanna;Tropical;28.418;192.03;90
+Tropical forest savanna;Tropical;28.915;99.24;91
+Tropical forest savanna;Tropical;27.074;84.78999999999999;92
+Tropical forest savanna;Tropical;24.131;70.28999999999999;93
+Tropical forest savanna;Tropical;17.51;53.51;94
+Tundra;Tundra;-6.687;20.259999999999998;95
+Tundra;Tundra;-8.896;5.08;96
+Tundra;Tundra;-9.706;0.73;97
+Tundra;Tundra;-13.382;3.4799999999999995;98
+Tundra;Tundra;-15.366;9.879999999999999;99
+Tundra;Tundra;-15.217;17.08;100
+Tundra;Tundra;-8.373;53.3;101
+Tundra;Tundra;-4.098;107.41;102
+Tundra;Tundra;-1.592;140.59;103
+Tundra;Tundra;-4.098;107.41;104
+Tundra;Tundra;-4.395;92.28999999999999;105
+Tundra;Tundra;-6.687;20.259999999999998;106
