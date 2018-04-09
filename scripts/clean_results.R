@@ -52,30 +52,32 @@ fill_trait <- function(x, y, mult) {
     TRUE ~ NA_real_
   )
 }
+
+cmm <- 1e4  # Convert g cm-2 to g m-2
 md <- md %>%
   mutate(
     leaf_anth_per_area = if_else(leaf_anth_per_area < 0, NA_real_, leaf_anth_per_area),
-    leaf_N_per_area = fill_trait(leaf_N_per_area, leaf_N_pct_mass, leaf_mass_per_area * 1e5),
-    leaf_C_per_area = fill_trait(leaf_C_per_area, leaf_C_pct_mass, leaf_mass_per_area * 1e5),
+    leaf_N_per_area = fill_trait(leaf_N_per_area, leaf_N_pct_mass, leaf_mass_per_area * cmm),
+    leaf_C_per_area = fill_trait(leaf_C_per_area, leaf_C_pct_mass, leaf_mass_per_area * cmm),
     leaf_chla_per_area = fill_trait(leaf_chla_per_area, leaf_chla_pct_mass, leaf_mass_per_area * 1e6),
     leaf_chlb_per_area = fill_trait(leaf_chlb_per_area, leaf_chlb_pct_mass, leaf_mass_per_area * 1e6),
     leaf_chltot_per_area = if_else(is.na(leaf_chltot_per_area), leaf_chla_per_area + leaf_chlb_per_area, leaf_chltot_per_area),
-    leaf_nonpolar_per_area = leaf_nonpolar_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_polar_per_area = leaf_polar_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_cellulose_per_area = leaf_cellulose_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_lignin_per_area = leaf_lignin_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_H_per_area = leaf_H_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_lutein_per_area = leaf_lutein_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_neoxanthin_per_area = leaf_neoxanthin_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_betacarotene_per_area = leaf_betacarotene_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_fiber_per_area = leaf_fiber_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_ash_per_area = leaf_ash_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_fat_per_area = leaf_fat_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_NSC_per_area = leaf_NSC_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_protein_per_area = leaf_protein_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_K_per_area = leaf_K_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_O_per_area = leaf_O_pct_mass * leaf_mass_per_area * 1e5,
-    leaf_starch_per_area = leaf_starch_pct_mass * leaf_mass_per_area * 1e5
+    leaf_nonpolar_per_area = leaf_nonpolar_pct_mass * leaf_mass_per_area * cmm,
+    leaf_polar_per_area = leaf_polar_pct_mass * leaf_mass_per_area * cmm,
+    leaf_cellulose_per_area = leaf_cellulose_pct_mass * leaf_mass_per_area * cmm,
+    leaf_lignin_per_area = leaf_lignin_pct_mass * leaf_mass_per_area * cmm,
+    leaf_H_per_area = leaf_H_pct_mass * leaf_mass_per_area * cmm,
+    leaf_lutein_per_area = leaf_lutein_pct_mass * leaf_mass_per_area * cmm,
+    leaf_neoxanthin_per_area = leaf_neoxanthin_pct_mass * leaf_mass_per_area * cmm,
+    leaf_betacarotene_per_area = leaf_betacarotene_pct_mass * leaf_mass_per_area * cmm,
+    leaf_fiber_per_area = leaf_fiber_pct_mass * leaf_mass_per_area * cmm,
+    leaf_ash_per_area = leaf_ash_pct_mass * leaf_mass_per_area * cmm,
+    leaf_fat_per_area = leaf_fat_pct_mass * leaf_mass_per_area * cmm,
+    leaf_NSC_per_area = leaf_NSC_pct_mass * leaf_mass_per_area * cmm,
+    leaf_protein_per_area = leaf_protein_pct_mass * leaf_mass_per_area * cmm,
+    leaf_K_per_area = leaf_K_pct_mass * leaf_mass_per_area * cmm,
+    leaf_O_per_area = leaf_O_pct_mass * leaf_mass_per_area * cmm,
+    leaf_starch_per_area = leaf_starch_pct_mass * leaf_mass_per_area * cmm
   ) %>%
   select_if(~!all(is.na(.)))
 
