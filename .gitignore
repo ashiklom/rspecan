@@ -6,6 +6,7 @@ processed_data
 .scratch.*
 
 spectra_db
+inversion
 
 manuscript/_book
 manuscript/_bookdown_files
