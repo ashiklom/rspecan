@@ -1,6 +1,7 @@
 #!/bin/bash
 
 FIGURE_SCRIPTS=(\
+    scripts/clean_results.R \
     scripts/figures/data_climate.R \
     scripts/figures/data_map.R \
     scripts/figures/partition_variability.R \
