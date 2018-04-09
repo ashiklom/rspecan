@@ -22,7 +22,7 @@ dat <- left_join(results_wide, metadata) %>%
     project_code, observation_id, species_code,
     !!!variable_df$code, starts_with("leaf"),
     -leaf_temperature, -leaf_age,
-    -leaf_anth_per_area, -leaf_prospect_N, -leaf_area, -leaf_thickness
+    -leaf_prospect_N, -leaf_area, -leaf_thickness
   )
 
 order_vals <- . %>%
