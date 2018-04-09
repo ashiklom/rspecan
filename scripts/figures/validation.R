@@ -178,6 +178,10 @@ dev.off()
 
 ############################################################
 
+specparam <- "Cab"
+trueparam <- "leaf_chltot_per_area"
+coords_list <- list()
+
 validate <- function(specparam, trueparam, coords_list = list()) {
   trueparam_q <- rlang::sym(trueparam)
   dat_sub <- dat %>%
@@ -197,7 +201,7 @@ validate <- function(specparam, trueparam, coords_list = list()) {
     do.call(coord_cartesian, coords_list) +
     theme_bw() +
     scale_color_manual(values = project_colors)
-  ggsave(infile(figdir, paste0("validation.", specparam, ".pdf")), plt)
+  ggsave(infile(figdir, paste0("validation_", specparam, ".pdf")), plt)
 
   lm_form <- paste(trueparam, "~", "Mean")
   lm_byproject <- dat_sub %>%
@@ -220,27 +224,43 @@ validate <- function(specparam, trueparam, coords_list = list()) {
       `MAE` = mae
     )
 
-  kable(lm_byproject, format = "latex") %>%
-    cat(file = infile(figdir, paste0("r2_byproject.", specparam, ".tex")))
+  kable(lm_byproject, format = "latex", booktabs = TRUE) %>%
+    cat(file = infile(figdir, paste0("r2_byproject_", specparam, ".tex")))
 
   err_byspecies <- dat_sub %>%
     group_by(short_name, species_code, prospect_version) %>%
-    summarize(mae = mean(error, na.rm = TRUE)) %>%
-    ungroup() %>%
-    select(short_name, species_code, prospect_version, mae) %>%
+    filter(n() > 5) %>%
+    nest() %>%
+    mutate(
+      N = map_dbl(data, nrow),
+      lmfit = map(data, lm, formula = formula(lm_form)),
+      coefs = map(lmfit, coef),
+      slope = map_dbl(coefs, "Mean"),
+      intercept = map_dbl(coefs, "(Intercept)"),
+      r2 = map2_dbl(lmfit, data, modelr::rsquare),
+      mae = map(data, "error") %>% map_dbl(mean, na.rm = TRUE)
+    ) %>%
+    select(short_name, species_code, prospect_version, slope, intercept, r2, mae, N) %>%
     mutate(
       sp_proj = interaction(species_code, short_name, prospect_version) %>%
-        fct_reorder(mae)
+        fct_reorder(r2, .desc = TRUE)
     )
+    #arrange(sp_proj) %>%
+    #mutate(
+      #xhi = cumsum(N),
+      #xlo = xhi - N,
+      #x = ((xlo + xhi) / 2) ^ (1/2),
+      #wid = (N) ^ (1/3)
+    #)
 
-  overall_err <- dat_sub %>%
-    group_by(prospect_version) %>%
-    summarize(mae = mean(error, na.rm = TRUE))
+  #overall_err <- dat_sub %>%
+    #group_by(prospect_version) %>%
+    #summarize(mae = mean(error, na.rm = TRUE))
 
   ggplot(err_byspecies) +
-    aes(x = sp_proj, y = mae, fill = short_name) +
-    geom_col() +
-    geom_hline(aes(yintercept = mae), data = overall_err, linetype = "dashed", color = "black") +
+    aes(x = sp_proj, y = r2, fill = short_name) +
+    geom_col(position = "identity") +
+    #geom_hline(aes(yintercept = mae), data = overall_err, linetype = "dashed", color = "black") +
     facet_wrap(~prospect_version, scales = "free_x") +
     xlab("Species x Project") +
     ylab("Mean absolute error") +
@@ -251,7 +271,7 @@ validate <- function(specparam, trueparam, coords_list = list()) {
       axis.ticks.x = element_blank()
     ) -> plt
 
-  ggsave(infile(figdir, paste0("r2_speciesbyproj.", specparam, ".pdf")), plt)
+  ggsave(infile(figdir, paste0("r2_speciesbyproj_", specparam, ".pdf")), plt)
 
   lm_bsi <- err_byspecies %>%
     left_join(species_info) %>%
@@ -264,7 +284,7 @@ validate <- function(specparam, trueparam, coords_list = list()) {
     scale_fill_manual(values = lt_colors) -> plt
     #scale_fill_brewer(type = "qual") -> plt
 
-  ggsave(infile(figdir, paste0("r2_speciesbyleaf.", specparam, ".pdf")), plt)
+  ggsave(infile(figdir, paste0("r2_speciesbyleaf_", specparam, ".pdf")), plt)
 }
 
 validate("Cab", "leaf_chltot_per_area")
