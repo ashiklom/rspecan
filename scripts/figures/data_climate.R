@@ -27,24 +27,25 @@ plt <- ggplot() +
     data = biome_polygons,
     mapping = aes(x = temp_degC, y = prec_mm, fill = biome)
   ) +
-  geom_point(
-    data = sites,
-    mapping = aes(x = AMT, y = AP, color = short_name)
-  ) +
   geom_label(
     data = biome_labels,
     mapping = aes(x = y, y = x, label = biome_label)
   ) +
+  geom_point(
+    data = sites,
+    mapping = aes(x = AMT, y = AP, color = short_name),
+    size = 3
+  ) +
   scale_fill_manual(values = df2dict(biome_labels, "color", "biome") %>% as.character()) +
   scale_color_manual(values = df2dict(project_colors, "color", "short_name")) +
   xlab(expression("Annual mean temperature" ~ (degree * C))) +
-  ylab("Annual precipitation (mm)") +
+  ylab("Annual precipitation (cm)") +
   guides(fill = FALSE) +
   theme_bw() +
   theme(
-    legend.position = "bottom"
+    legend.position = "bottom",
+    legend.title = element_blank()
   )
-
 ggsave(
   infile("manuscript", "figures", "data_climate.pdf"),
   plt,

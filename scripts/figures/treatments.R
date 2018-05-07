@@ -135,7 +135,7 @@ barnes_mod <- barnes_fit %>%
   mutate(norm_value = normalize(value)) %>%
   nest() %>%
   mutate(
-    lmfit = map(data, lm, formula = formula(value ~ leaf_temperature + air_temperature + vapor_pressure_deficit)),
+    lmfit = map(data, lm, formula = formula(value ~ leaf_temperature + vapor_pressure_deficit)),
     lmtidy = map(lmfit, ~broom::tidy(.) %>% filter(term != "(Intercept)"))
   ) %>%
   unnest(lmtidy) %>%
@@ -189,13 +189,16 @@ treatment_plot <- bind_rows(treatment_fit, barnes_mod, clim_tidy) %>%
   )
 
 plt <- ggplot(treatment_plot) +
-  aes(x = variable, y = term, fill = factor(plevel)) +
+  aes(x = variable, y = term, fill = factor(plevel) %>% fct_rev()) +
   geom_tile() +
   geom_text(aes(label = format(estimate, digits = 1, scientific = FALSE))) +
   facet_grid(treatment_type ~ ., scales = "free_y") +
-  scale_fill_brewer(type = "div") +
-  labs(fill = "Significance level") +
+  scale_fill_brewer(type = "div", direction = -1) +
+  labs(fill = "Effect direction x significance level") +
   theme_bw() +
-  theme(axis.title = element_blank())
-
+  theme(
+    axis.title = element_blank(),
+    legend.position = "bottom",
+    strip.text.y = element_text(angle = 0)
+  )
 ggsave(infile("manuscript/figures/treatment_summary.pdf"), plt)

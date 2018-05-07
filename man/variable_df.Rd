@@ -4,7 +4,7 @@
 \name{variable_df}
 \alias{variable_df}
 \title{Data frame of PROSPECT parameters}
-\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 6 rows and 2 columns.}
+\format{An object of class \code{tbl_df} (inherits from \code{tbl}, \code{data.frame}) with 6 rows and 3 columns.}
 \usage{
 variable_df
 }

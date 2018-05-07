@@ -94,3 +94,19 @@ write_csv(results, "spectra_db/cleaned_results.csv")
 write_csv(bad_results, "spectra_db/bad_results.csv")
 write_csvy(md, "spectra_db/cleaned_metadata.csvy")
 write_csvy(bad_md, "spectra_db/bad_metadata.csvy")
+
+wide_d_results <- results %>%
+  filter(prospect_version == "D") %>%
+  select(-specdb) %>%
+  gather(stat, value, Mean:`97.5%`) %>%
+  filter(stat %in% c("Mean", "2.5%", "97.5%")) %>%
+  mutate(
+    stat = recode(stat, "2.5%" = "lo", "97.5%" = "hi")
+  ) %>%
+  unite(param_stat, parameter, stat) %>%
+  spread(param_stat, value) %>%
+  rename_at(vars(ends_with("_Mean")), ~str_remove(., "_Mean"))
+
+wide_d_results %>%
+  left_join(md) %>%
+  saveRDS("spectra_db/cleaned_wide.rds")

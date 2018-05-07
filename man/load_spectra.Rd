@@ -5,7 +5,7 @@
 \title{Load single set of observed spectra from HDF5 file}
 \usage{
 load_spectra(project_code, observation_id, specdb, wl_min = NULL,
-  wl_max = NULL, wavelengths = NULL, spectra_types = NULL)
+  wl_max = NULL, wavelengths = NULL, spectra_types = NULL, pb = NULL)
 }
 \arguments{
 \item{project_code}{Character string of project code from which to load spectra}
@@ -23,6 +23,8 @@ load_spectra(project_code, observation_id, specdb, wl_min = NULL,
 
 \item{spectra_types}{Spectra types to retrieve, or `NULL` (default) for all 
 types. See [PEcAnRTM::valid_spectra_types].}
+
+\item{pb}{Progress bar object (default = NULL)}
 }
 \value{
 [PEcAnRTM::spectra] object

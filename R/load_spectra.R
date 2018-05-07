@@ -9,6 +9,7 @@
 #' `NULL` (default) to retrieve as is
 #' @param spectra_types Spectra types to retrieve, or `NULL` (default) for all 
 #' types. See [PEcAnRTM::valid_spectra_types].
+#' @param pb Progress bar object (default = NULL)
 #' @return [PEcAnRTM::spectra] object
 #' @export
 load_spectra <- function(project_code,
@@ -17,7 +18,10 @@ load_spectra <- function(project_code,
                          wl_min = NULL,
                          wl_max = NULL,
                          wavelengths = NULL,
-                         spectra_types = NULL) {
+                         spectra_types = NULL,
+                         pb = NULL) {
+
+  on.exit(if (!is.null(pb)) pb$tick())
 
   assertthat::assert_that(
     assertthat::is.string(project_code),
@@ -95,13 +99,17 @@ add_spectra_column <- function(data, specdb, ...) {
     data %has_name% "project_code",
     data %has_name% "observation_id"
   )
+  pb <- progress::progress_bar$new(total = nrow(data))
   data %>%
     dplyr::mutate(
       spectra = purrr::map2(
         project_code,
         observation_id,
         load_spectra,
-        specdb = specdb, ...)
+        specdb = specdb,
+        pb = pb,
+        ...
+      )
     )
 }
 
