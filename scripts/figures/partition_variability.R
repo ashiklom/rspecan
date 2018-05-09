@@ -8,8 +8,12 @@ metadata <- read_csvy("spectra_db/cleaned_metadata.csvy") %>%
   mutate_if(is.character, na_if, "") %>%
   select(-scientific_name, -variety, -genus, -species)
 
-spp_info <- read_csvy("spectra_db/species_info.csvy") %>%
-  mutate_if(is.character, na_if, "") %>%
+spp_info <- read_csv(
+  "spectra_db/species_info.csvy",
+  col_types = cols(.default = "c", nitrogen_fixer = "l",
+                   shade_tolerance_numeric = "c", try_species_ID = "i",
+                   myco_is_am = "l", is_shade_intolerant = "l")
+) %>%
   semi_join(metadata)
 
 spp_info %>%
@@ -127,7 +131,6 @@ plt <- ggplot(splot2) +
   ) +
   theme_bw()
 if (interactive()) plt
-
 ggsave(infile("manuscript/figures/across_species_anova.pdf"), plt)
 
 ############################################################

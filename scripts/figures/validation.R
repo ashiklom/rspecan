@@ -2,10 +2,13 @@ library(tidyverse)
 library(rspecan)
 library(metar)
 library(GGally)
+library(ggridges)
 import::from(knitr, kable)
 import::from(cowplot, get_legend, plot_grid)
 import::from(viridis, scale_color_viridis, scale_fill_viridis)
 import::from(MASS, rlm)
+
+options(na.action = na.omit, error = recover)
 
 theme_set(theme_bw())
 
@@ -13,14 +16,31 @@ figdir <- indir("manuscript", "figures")
 
 results <- read_csv("spectra_db/cleaned_results.csv")
 metadata <- read_csvy("spectra_db/cleaned_metadata.csvy")
+
 species_info <- read_csv(
   "spectra_db/species_info.csvy",
   col_types = cols(.default = "c", nitrogen_fixer = "l", try_species_ID = "i",
                    myco_is_am = "l", is_shade_intolerant = "l")
-)
+) %>%
+  mutate(
+    gf_lt = interaction(growth_form, leaf_type, drop = TRUE) %>%
+      fct_recode(
+        "grass" = "graminoid.broad",
+        "herb" = "herb.broad",
+        "broadleaf" = "shrub.broad",
+        "broadleaf" = "tree.broad",
+        "conifer" = "tree.needle"
+      )
+  )
 
 project_colors <- read_csv("spectra_db/project_colors.csv") %>%
   df2dict("color", "short_name")
+project_fill <- scale_fill_manual(values = project_colors)
+
+gflt_fill <- scale_fill_manual(values = c(broadleaf = "green4", conifer = "blue4",
+                                          herb = "purple", grass = "orange"))
+gflt_color <- scale_color_manual(values = c(broadleaf = "green4", conifer = "blue4",
+                                            herb = "purple", grass = "orange"))
 
 prospect_colors <- c(
   "4" = "blue",
@@ -49,6 +69,7 @@ md_sub <- metadata %>%
 
 dat <- left_join(results, md_sub) %>%
   filter(!is.na(short_name)) %>%
+  anti_join(species_info %>% filter(growth_form == "vine")) %>%
   # Turn off a few values for the display
   mutate(
     leaf_water_thickness = censor_if(leaf_water_thickness, leaf_water_thickness > 0.07),
@@ -70,11 +91,7 @@ valid_data <- function(specparam, trueparam, dat) {
       rel_error = error / observed,
       rel_error2 = rel_error ^ 2,
       rel_errora = abs(rel_error)
-    ) #%>%
-    #dplyr::select(
-      #project_code, short_name, species_code, prospect_version, parameter,
-      #Mean, SD, lo, hi, observed
-    #)
+    )
 }
 
 valid_plot <- function(dat) {
@@ -83,8 +100,8 @@ valid_plot <- function(dat) {
         y = observed, color = short_name) +
     geom_errorbarh(color = "grey50", size = 0.5, alpha = 0.5) +
     geom_point(size = 0.5) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_smooth(mapping = aes(group = 1), method = "lm", se = FALSE,
+    geom_smooth(method = MASS::rlm, se = FALSE) +
+    geom_smooth(mapping = aes(group = 1), method = MASS::rlm, se = FALSE,
                 linetype = "solid", color = "black") +
     geom_abline(linetype = "dashed") +
     scale_color_manual(values = project_colors) +
@@ -96,7 +113,7 @@ valid_plot <- function(dat) {
 fit_error <- function(nested_dat) {
   nested_dat %>%
     mutate(
-      lmfit = map(data, lm, formula = observed ~ Mean),
+      lmfit = map(data, ~MASS::rlm(observed ~ Mean, data = .)),
       coefs = map(lmfit, coef),
       slope = map_dbl(coefs, "Mean"),
       intercept = map_dbl(coefs, "(Intercept)"),
@@ -204,13 +221,13 @@ dat_valid <- valid_df %>%
   mutate(
     instrument_code = factor(instrument_code),
     short_name = factor(short_name, names(project_colors)) %>% fct_drop(),
-    growth_form = factor(growth_form) %>%
-      fct_collapse(woody = c("shrub", "tree"))
+    gf_lt = fct_drop(gf_lt)
   )
 
+message("Validation by param and growth form")
 plot_bygf <- function(param) {
   dat_valid %>%
-    filter(parameter == !!param, !is.na(growth_form), growth_form != "vine") %>%
+    filter(parameter == !!param, !is.na(gf_lt)) %>%
     ggplot() +
     aes(x = Mean, xmin = lo, xmax = hi, y = observed, color = short_name) +
     geom_errorbarh(color = "grey60", alpha = 0.5) +
@@ -218,14 +235,20 @@ plot_bygf <- function(param) {
     geom_smooth(method = MASS::rlm, se = FALSE) +
     geom_smooth(aes(group = 1), method = MASS::rlm, se = FALSE, color = "black") +
     geom_abline(linetype = "dashed") +
-    facet_grid(~ growth_form, drop = FALSE) +
+    facet_grid(~ gf_lt, drop = FALSE) +
     scale_color_manual(values = project_colors, drop = FALSE) +
     labs(color = "Project")
 }
 plist <- map(c("Cab", "Car", "Cw", "Cm"), plot_bygf)
 pltbygf <- ggmatrix(
   plist, nrow = 4, ncol = 1,
-  yAxisLabels = c("Chl.", "Car.", "Water", "LMA"),
+  labeller = label_parsed,
+  yAxisLabels = c(
+    '"Chl." ~ (mu * g ~ cm ^ {-2})',
+    '"Car." ~ (mu * g ~ cm ^ {-2})',
+    '"Water" ~ (g ~ cm ^ {-2})',
+    '"LMA" ~ (g ~ cm ^ {-2})'
+  ),
   legend = c(4, 1)
 ) +
   labs(x = "Inversion estimate", y = "Observed") +
@@ -234,6 +257,96 @@ pltbygf <- ggmatrix(
 ggsave("manuscript/figures/validation_by_gf.pdf", pltbygf, width = 8, height = 8)
 
 ############################################################
+do_r2 <- function(x, y) {
+  fit <- MASS::rlm(y ~ x)
+  d <- tibble(x = x, y = y)
+  modelr::rsquare(fit, d)
+}
+
+error_model <- dat_valid %>%
+  mutate(
+    specparam = recode_factor(
+      specparam,
+      Cab = "\"Chl.\" ~ (mu * g ~ cm ^ {-2})",
+      Car = "\"Car.\" ~ (mu * g ~ cm ^ {-2})",
+      Cw = "\"Water\" ~ (g ~ cm ^ {-2})",
+      Cm = "\"LMA\" ~ (g ~ cm ^ {-2})"
+    )
+  ) %>%
+  group_by(specparam, species_code, short_name) %>%
+  summarize(
+    N = n(),
+    r2 = possibly(do_r2, NA_real_)(Mean, observed),
+    rmse = sqrt(mean((Mean - observed) ^ 2, na.rm = TRUE)),
+    rmse_rel = sqrt(mean((Mean/observed - 1) ^ 2, na.rm = TRUE))
+  ) %>%
+  ungroup()
+
+proj_pft_plot <- dat_valid %>%
+  group_by(species_code, short_name, specparam) %>%
+  ungroup() %>%
+  mutate(
+    pct_error = 100 * (error/observed),
+    specparam = recode_factor(
+      specparam,
+      Cab = "\"Chl.\" ~ (mu * g ~ cm ^ {-2})",
+      Car = "\"Car.\" ~ (mu * g ~ cm ^ {-2})",
+      Cw = "\"Water\" ~ (g ~ cm ^ {-2})",
+      Cm = "\"LMA\" ~ (g ~ cm ^ {-2})"
+    )
+  ) %>%
+  filter(n() > 5, !is.na(gf_lt), abs(pct_error) < 400) %>%
+  ggplot() +
+  #aes(x = pct_error, y = short_name, fill = gf_lt) +
+  #geom_density_ridges(alpha = 0.5) +
+  #geom_point(size = 0.3) +
+  #geom_vline(xintercept = 0, linetype = "dashed") +
+  aes(x = short_name, y = pct_error, fill = gf_lt, color = gf_lt) +
+  geom_violin() +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~ specparam, scales = "free", labeller = label_parsed) +
+  #labs(x = "Percent bias in inversion estimate", y = "Project", fill = "Functional type") +
+  labs(y = "Percent bias in inversion estimate", x = "Project", fill = "Functional type") +
+  gflt_fill +
+  gflt_color +
+  guides(color = FALSE) +
+  theme(
+    legend.position = "bottom",
+    #axis.title.y = element_blank()
+    axis.title.x = element_blank(),
+    axis.text.x = element_text(angle = 90)
+  )
+ggsave("manuscript/figures/error_by_gf.pdf", proj_pft_plot, width = 8, height = 8)
+
+r2_gf <- error_model %>%
+  filter(r2 < 1, N > 5) %>%
+  mutate(
+    x = interaction(specparam, species_code, short_name) %>%
+      fct_reorder(r2, .desc = TRUE)
+  ) %>%
+  left_join(species_info) %>%
+  arrange(x) %>%
+  filter(!is.na(gf_lt), N > 5) %>%
+  ggplot() +
+  aes(x = x, y = r2, fill = gf_lt) +
+  #geom_point() +
+  geom_col() +
+  #geom_segment(aes(x = x, xend = x, y = 0, yend = r2), size = 1.4) +
+  #geom_point() +
+  facet_wrap(~ specparam, scales = "free", labeller = label_parsed) +
+  labs(x = "Species", y = "R2", fill = "Functional type", color = "Functional type") +
+  #scale_fill_manual(values = project_colors)
+  gflt_color +
+  gflt_fill +
+  theme(
+    axis.text.x = element_blank(),
+    axis.ticks.x = element_blank(),
+    legend.position = "bottom"
+  )
+ggsave("manuscript/figures/r2_by_gf.pdf", r2_gf, width = 8, height = 8)
+
+############################################################
+message("Old validation")
 
 specparam <- "Cab"
 trueparam <- "leaf_chltot_per_area"
@@ -242,24 +355,22 @@ coords_list <- list()
 chl_dat <- valid_data(specparam, trueparam, dat)
 
 valid_subset <- function(specparam, trueparam) {
+  trueparam_q <- rlang::sym(trueparam)
   dat %>%
     filter(parameter == specparam, !is.na(!!trueparam_q)) %>%
     rename(lo = `2.5%`, hi = `97.5%`) %>%
     mutate(error = abs(Mean - !!trueparam_q))
 }
 
-chl_dat <- valid_subset("Cab", "leaf_chltot_per_area")
-
 validate <- function(specparam, trueparam, coords_list = list()) {
-  trueparam_q <- rlang::sym(trueparam)
-  dat_sub <- valid_data(specparam, trueparam, dat)
+  dat_sub <- valid_subset(specparam, trueparam)
   plt <- ggplot(dat_sub) +
     aes_string(x = "Mean", xmin = "lo", xmax = "hi",
-               y = "observed", color = "short_name") +
+               y = trueparam, color = "short_name") +
     geom_point(size = 0.5) +
     geom_errorbarh(color = "grey50", size = 0.5, alpha = 0.5) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_smooth(mapping = aes(group = 1), method = "lm", se = FALSE,
+    geom_smooth(method = MASS::rlm, se = FALSE) +
+    geom_smooth(mapping = aes(group = 1), method = MASS::rlm, se = FALSE,
                 linetype = "solid", color = "black") +
     geom_abline(linetype = "dashed") +
     facet_wrap(~prospect_version, scales = "free") +
@@ -267,39 +378,15 @@ validate <- function(specparam, trueparam, coords_list = list()) {
     theme_bw() +
     scale_color_manual(values = project_colors)
 
-  dat_mod <- dat_sub %>%
-    filter(grepl("Cedar Creek", short_name), prospect_version == "D") %>%
-    group_by(species_code) %>%
-    nest() %>%
-    mutate(
-      fit = map(data, lm, formula = observed ~ Mean),
-      r2 = map2_dbl(fit, data, modelr::rsquare)
-    ) %>%
-    select(species_code, r2)
-
-  dat_sub %>%
-    filter(grepl("Cedar Creek", short_name), prospect_version == "D") %>%
-    left_join(dat_mod, by = "species_code") %>%
-    mutate(species_code = fct_reorder(species_code, r2, .desc = TRUE)) %>%
-    ggplot() +
-    aes(x = Mean, y = observed, group = species_code) +
-    geom_point(size = 0.5) +
-    geom_smooth(method = "lm", se = FALSE) +
-    geom_abline(linetype = "dashed") +
-    facet_wrap(~species_code)
-
-  plt %+%
-    (dat_sub %>% filter(grepl("Cedar Creek", short_name))) %+%
-    aes(color = species_code) %+%
-    scale_color_brewer(type = "qual")
-  ggsave(infile(figdir, paste0("validation_", specparam, ".pdf")), plt)
+  ggsave(infile(figdir, paste0("validation_", specparam, ".pdf")), plt,
+         width = 7, height = 7)
 
   lm_form <- paste(trueparam, "~", "Mean")
   lm_byproject <- dat_sub %>%
     group_by(short_name, prospect_version) %>%
     nest() %>%
     mutate(
-      lmfit = map(data, lm, formula = formula(lm_form)),
+      lmfit = map(data, ~MASS::rlm(formula(lm_form), data = .)),
       coefs = map(lmfit, coef),
       slope = map_dbl(coefs, "Mean"),
       intercept = map_dbl(coefs, "(Intercept)"),
@@ -324,37 +411,25 @@ validate <- function(specparam, trueparam, coords_list = list()) {
     nest() %>%
     mutate(
       N = map_dbl(data, nrow),
-      lmfit = map(data, lm, formula = formula(lm_form)),
+      lmfit = map(data, ~MASS::rlm(formula(lm_form), data = .)),
       coefs = map(lmfit, coef),
       slope = map_dbl(coefs, "Mean"),
       intercept = map_dbl(coefs, "(Intercept)"),
       r2 = map2_dbl(lmfit, data, modelr::rsquare),
       mae = map(data, "error") %>% map_dbl(mean, na.rm = TRUE)
     ) %>%
+    filter(r2 < 1) %>%
     select(short_name, species_code, prospect_version, slope, intercept, r2, mae, N) %>%
     mutate(
       sp_proj = interaction(species_code, short_name, prospect_version) %>%
         fct_reorder(r2, .desc = TRUE)
     )
-    #arrange(sp_proj) %>%
-    #mutate(
-      #xhi = cumsum(N),
-      #xlo = xhi - N,
-      #x = ((xlo + xhi) / 2) ^ (1/2),
-      #wid = (N) ^ (1/3)
-    #)
-
-  #overall_err <- dat_sub %>%
-    #group_by(prospect_version) %>%
-    #summarize(mae = mean(error, na.rm = TRUE))
-
   ggplot(err_byspecies) +
     aes(x = sp_proj, y = r2, fill = short_name) +
     geom_col(position = "identity") +
-    #geom_hline(aes(yintercept = mae), data = overall_err, linetype = "dashed", color = "black") +
     facet_wrap(~prospect_version, scales = "free_x") +
     xlab("Species x Project") +
-    ylab("Mean absolute error") +
+    ylab(expression(R^2)) +
     scale_fill_manual(values = project_colors) +
     theme_bw() +
     theme(
@@ -362,20 +437,35 @@ validate <- function(specparam, trueparam, coords_list = list()) {
       axis.ticks.x = element_blank()
     ) -> plt
 
-  ggsave(infile(figdir, paste0("r2_speciesbyproj_", specparam, ".pdf")), plt)
+  ggsave(infile(figdir, paste0("r2_speciesbyproj_", specparam, ".pdf")), plt,
+         width = 7, height = 7)
 
   lm_bsi <- err_byspecies %>%
     left_join(species_info) %>%
-    filter(!is.na(leaf_type))
+    filter(!is.na(leaf_type), growth_form != "vine") %>%
+    mutate(growth_form = fct_collapse(growth_form, woody = c("tree", "shrub")))
 
   lt_colors <- c(broad = "green4", needle = "yellow2")
 
-  plt %+% lm_bsi +
+  plt <- plt %+% lm_bsi +
     aes(fill = leaf_type) +
-    scale_fill_manual(values = lt_colors) -> plt
-    #scale_fill_brewer(type = "qual") -> plt
+    scale_fill_manual(values = lt_colors)
+  ggsave(infile(figdir, paste0("r2_speciesbyleaf_", specparam, ".pdf")), plt,
+         width = 7, height = 7)
 
-  ggsave(infile(figdir, paste0("r2_speciesbyleaf_", specparam, ".pdf")), plt)
+  plt <- plt +
+    aes(fill = growth_form) +
+    labs(fill = "Growth form") +
+    scale_fill_manual(values = c(woody = "green4", herb = "purple", graminoid = "orange"))
+  ggsave(infile(figdir, paste0("r2_speciesbygf_", specparam, ".pdf")), plt,
+         width = 7, height = 7)
+
+  plt <- plt +
+    aes(fill = gf_lt) +
+    labs(fill = "Growth form") +
+    scale_fill_manual(values = c(broadleaf = "green4", conifer = "blue4", herb = "purple", grass = "orange"))
+  ggsave(infile(figdir, paste0("r2_speciesbygflt_", specparam, ".pdf")), plt,
+         width = 7, height = 7)
 }
 
 validate("Cab", "leaf_chltot_per_area")
