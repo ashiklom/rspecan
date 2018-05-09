@@ -30,7 +30,30 @@ spectra <- dat_full %>%
 dat_sub <- dat_full %>%
   select(-matches(wave_rxp))
 
+species_dict <- tribble(
+  ~`USDA Symbol`, ~species_code,
+  "poapr", "POPR",
+  "petpu", "DAPU5",
+  "petca", "DACA7",
+  "schsc", "SCSC",
+  "petvi", "DAVI",
+  "amoca", "AMCA6",
+  "andge", "ANGE",
+  "panvi", "PAVI2",
+  "sornu", "SONU2",
+  "koecr", "KOMA",
+  "luppe", "LUPE3",
+  "achmi", "ACMI2",
+  "lesca", "LECA8",
+  "asctu", "ASTU",
+  "leppe", "LUPE3",
+  "liaas", "LIAS",
+  "monfi", "MOFI",
+  "solri", "OLRIR"
+)
+
 metadata <- dat_sub %>%
+  left_join(species_dict) %>%
   transmute(
     observation_id = observation_id,
     instrument_code = "asd-fs3",
@@ -44,7 +67,7 @@ metadata <- dat_sub %>%
     leaf_cellulose_pct_mass = add_metadata(`Cell`, data_unit = "%"),
     leaf_fiber_pct_mass = add_metadata(Fiber, data_unit = "%"),
     leaf_chltot_per_area = add_metadata(`Chl g m2`, data_unit = "g m-2"),
-    species_code = toupper(`USDA Symbol`),
+    species_code = species_code,
     Database_ID = "USDA Plants",
     latitude = 45.402,
     longitude = -93.199,
