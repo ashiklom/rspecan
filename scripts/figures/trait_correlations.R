@@ -1,8 +1,10 @@
 library(tidyverse)
 library(rspecan)
 library(corrplot)
+library(ggridges)
+library(GGally)
 import::from(metar, read_csvy)
-import::from(cowplot, plot_grid)
+import::from(cowplot, plot_grid, theme_cowplot, panel_border, save_plot, get_legend)
 
 results <- read_csv("spectra_db/cleaned_results.csv")
 
@@ -66,8 +68,20 @@ dev.off()
 metadata <- read_csvy("spectra_db/cleaned_metadata.csvy") %>%
   mutate_if(is.character, na_if, "")
 
-species_info_raw <- read_csvy("spectra_db/species_info.csvy") %>%
-  mutate_if(is.character, na_if, "")
+species_info_raw <- read_csv(
+  "spectra_db/species_info.csvy",
+  col_types = cols_only("species_code" = "c", "growth_form" = "c", "leaf_type" = "c")
+) %>%
+  mutate(
+    gf_lt = case_when(
+      leaf_type == "needle" ~ "conifer",
+      growth_form %in% c("tree", "shrub") ~ "broadleaf",
+      growth_form == "graminoid" ~ "grass",
+      growth_form == "herb" ~ "herb",
+      TRUE ~ NA_character_
+    ),
+    gf_lt = factor(gf_lt, c("broadleaf", "conifer", "grass", "herb"))
+  )
 
 clim_dat <- readRDS("extdata/worldclim_met.rds") %>%
   select(-site_name) %>%
@@ -134,35 +148,69 @@ sub_trait <- function(x) {
   str_match(x, "^leaf_([[:alpha:]]+)(?:_per)?_area")[,2]
 }
 
-corr_grid %>%
+corr_plt <- corr_grid %>%
   mutate(
     species_code = fct_reorder(species_code, corr, mean),
     prospect = lvls_revalue(prospect, variable_df$shortname),
     trait = fct_relabel(trait, sub_trait)
-  ) %>%
-  ggplot() +
-  aes(x = species_code, y = corr, alpha = N) +
-  geom_col() +
-  #geom_hline(yintercept = 0, lty = "dashed") +
-  #geom_hline(yintercept = c(0.5, -0.5), lty = "dotted") +
-  facet_grid(trait ~ prospect, scales = "free_y", space = "free_y") +
-  ylim(-1, 1) +
-  coord_flip() +
-  scale_alpha_continuous(trans = "log10") +
-  labs(
-    y = "Correlation coefficient",
-    alpha = "Sample size"
-  ) +
-  theme_bw() +
-  theme(
-    axis.title.y = element_blank(),
-    strip.text.y = element_text(angle = 0),
-    strip.background = element_blank(),
-    axis.text = element_text(size = rel(0.4)),
-    panel.spacing = unit(0.2, "lines")
-  ) -> plt
-ggsave(infile("manuscript", "figures", "trait_correlations_areabars.pdf"), plt,
-       width = 7, height = 11, units = "in")
+  )
+
+#error_model <- readRDS("error_model.rds") %>%
+  #mutate(prospect = lvls_revalue(specparam, c("Chl.", "Car.", "Water", "Dry matter")))
+
+#err_corr <- error_model %>%
+  #left_join(corr_plt)
+
+#ggplot(err_corr %>% filter(trait == "lignin")) +
+  #aes(x = r2, y = corr, color = gf_lt) +
+  #geom_point() +
+  #facet_wrap(~prospect, scales = "free")
+
+
+plot_corr <- function(dat) {
+  dat %>%
+    mutate(x = as.character(species_code)) %>%
+    arrange(gf_lt) %>%
+    ggplot() +
+    aes(x = species_code, xend = species_code, y = corr, color = gf_lt) +
+    geom_hline(yintercept = 0, color = "grey") +
+    geom_segment(aes(y = 0, yend = corr)) +
+    geom_point() +
+    facet_grid(trait ~ prospect, scales = "free_y", space = "free_y") +
+    coord_flip() +
+    scale_alpha_continuous(trans = "log10") +
+    scale_color_manual(values = c("broadleaf" = "green4", "conifer" = "blue4", "herb" = "purple", "grass" = "orange")) +
+    scale_y_continuous(breaks = c(-1, -0.5, 0, 0.5, 1), limits = c(-1, 1)) +
+    labs(
+      y = "Correlation coefficient",
+      color = "Functional type"
+    ) +
+    theme_grey() +
+    theme(
+      axis.title.y = element_blank(),
+      axis.text.x = element_text(angle = 90, size = rel(0.7)),
+      axis.text.y = element_text(size = rel(0.8)),
+      strip.text.y = element_text(angle = 0, size = rel(0.75)),
+      strip.text.x = element_text(size = rel(0.75)),
+      panel.spacing = unit(0.2, "lines"),
+      legend.position = "bottom"
+    )
+}
+cn_plot <- plot_corr(corr_plt %>% filter(trait %in% c("N", "C")))
+other_plot <- plot_corr(corr_plt %>% filter(!trait %in% c("N", "C")))
+leg <- get_legend(cn_plot)
+both_plot <- plot_grid(
+  plot_grid(cn_plot + guides(color = FALSE), other_plot + guides(color = FALSE), nrow = 1),
+  leg,
+  rel_heights = c(1, 0.03),
+  nrow = 2
+)
+save_plot(
+  infile("manuscript", "figures", "trait_correlations_lollipop.pdf"),
+  both_plot,
+  base_width = 8,
+  base_height = 9
+)
 
 order_vals <- . %>%
   select(
@@ -187,12 +235,41 @@ species_means <- dat %>%
   select(-project_code, -observation_id) %>%
   group_by(species_code) %>%
   summarize_all(mean, na.rm = TRUE) %>%
-  select_if(~sum(!is.na(.)) > 3)
+  select_if(~sum(!is.na(.)) >= 10)
+use_y <- c(
+  "N" = "leaf_N_per_area",
+  "C" = "leaf_C_per_area",
+  "cellulose" = "leaf_cellulose_per_area",
+  "lignin" = "leaf_lignin_per_area"
+)
 
 species_vals <- species_means %>%
   select(-species_code) %>%
-  order_vals
-species_corr <- cor(species_vals, use = "pairwise.complete.obs")[, variable_df$shortname]
+  order_vals %>%
+  select(
+    1:6, matches("_area"),
+    -matches("chl", ignore.case = FALSE),
+    -matches("cartot", ignore.case = FALSE),
+    -leaf_H_per_area, -leaf_O_per_area, -leaf_mass_per_area
+  ) %>%
+  rename_all(~str_remove(., "leaf_")) %>%
+  rename_all(~str_remove(., "_per_area"))
+species_corr <- cor(species_vals, use = "pairwise.complete.obs")
 pdf(infile("manuscript/figures/trait_correlations_species.pdf"))
-corrplot(species_corr)
+corrplot.mixed(
+  species_corr,
+  upper = "number", lower = "circle",
+  number.cex = 0.7, tl.cex = 0.5
+)
 dev.off()
+
+#species_pca <- princomp(species_vals, cor = TRUE)
+#sp_eigen <- eigen(species_corr)
+#pcvec <- sp_eigen$vectors[, ] %>%
+  #as_tibble() %>%
+  #mutate(variable = colnames(species_corr)) %>%
+  #select(variable, everything())
+#scores <- as.matrix(species_vals)
+#pcpoints <- pca_dat %>%
+  #add_column(!!!as_tibble(pcfit$scores))
+
