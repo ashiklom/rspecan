@@ -250,6 +250,7 @@ species_vals <- species_means %>%
     1:6, matches("_area"),
     -matches("chl", ignore.case = FALSE),
     -matches("cartot", ignore.case = FALSE),
+    -matches("fiber"),
     -leaf_H_per_area, -leaf_O_per_area, -leaf_mass_per_area
   ) %>%
   rename_all(~str_remove(., "leaf_")) %>%
