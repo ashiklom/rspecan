@@ -12,3 +12,4 @@ manuscript/_book
 manuscript/_bookdown_files
 manuscript/figures
 **/*.html
+/.drake
