@@ -30,6 +30,7 @@ analysis <- drake_plan(
   site_climate_gg = site_climate_plot(sites, biome_polygons, biome_labels, project_colors),
   site_map_gg = site_map_plot(sites, project_colors),
   species_info = get_species_info(file_in("spectra_db/species_info.csvy"), metadata),
+  species_info_gf = assign_species_gf(species_info),
   results_d_long = combine_results_long(results, metadata, species_info),
   anova_all_dat = anova_all(results_d_long),
   anova_all_gg = anova_all_plot(anova_all_dat),
@@ -38,7 +39,14 @@ analysis <- drake_plan(
   phenology_dat = setup_phenology_dat(results, metadata),
   phenology_gg = phenology_plot(phenology_dat),
   project_table_dat = setup_project_table(metadata),
-  prospect_pairs_plotnames = all_result_pairs(results)
+  prospect_pairs_plotnames = all_result_pairs(results),
+  wide_results_sorted = wide_results_sort(wide_results),
+  pca_plot_gg = pca_plot(wide_results_sorted),
+  correlation_dat = setup_correlation_data(wide_results_sorted, metadata),
+  correlation_plot_dat = setup_correlation_plot(correlation_dat, species_info_gf),
+  correlation_plot_gg = correlation_plot(correlation_plot_dat),
+  species_mean_correlations = setup_correlation_species_means(correlation_dat),
+  intraspecific_correlation_ridge_gg = intraspecific_correlation_ridge_plot(correlation_plot_dat)
 )
 
 manuscript_figs <- drake_plan(
@@ -64,13 +72,45 @@ manuscript_figs <- drake_plan(
     anova_interspecific_gg
   ),
   phenology_man = ggsave(
-    "manuscript/figures/trait_phenology.pdf",
+    file_out("manuscript/figures/trait_phenology.pdf"),
     phenology_gg
   ),
   project_table_man = write_project_table(
     project_table_dat,
-    "manuscript/figures/project_table.tex"
+    file_out("manuscript/figures/project_table.tex")
+  ),
+  pca_plot_man = cowplot::ggsave(
+    file_out("manuscript/figures/prospect_pca.pdf"),
+    pca_plot_gg,
+    width = 7, height = 3.5
+  ),
+  correlation_plot_man = cowplot::save_plot(
+    file_out("manuscript/figures/trait_correlations_lollipop.pdf"),
+    correlation_plot_gg,
+    base_width = 8,
+    base_height = 9
+  ),
+  correlation_species_means_plot_man = correlation_species_means_plot(
+    species_mean_correlations,
+    file_out("manuscript/figures/trait_correlations_species.pdf")
   )
 )
 
-my_plan <- rbind(analysis, manuscript_figs)
+presentation_figs <- drake_plan(
+  correlation_species_means_present = {
+    pdf(file_out("manuscript/figures/zpres_trait_correlations_species.pdf"))
+    ii <- seq_len(nrow(rspecan::variable_df))
+    corrplot::corrplot(
+      species_mean_correlations[-ii, ii]
+    )
+    dev.off()
+  },
+  intraspecific_correlation_ridge_present = cowplot::save_plot(
+    file_out("manuscript/figures/zpres_correlation_ridge.pdf"),
+    intraspecific_correlation_ridge_gg,
+    base_height = 6,
+    base_width = 9
+  )
+)
+
+my_plan <- rbind(analysis, manuscript_figs, presentation_figs)
