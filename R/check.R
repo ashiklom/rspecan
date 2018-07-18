@@ -45,7 +45,8 @@ check_metadata <- function(metadata) {
 
 check_spectra <- function(spectra) {
   assertthat::assert_that(
-    is_spectra(spectra)
+    tibble::is_tibble(spectra),
+    nrow(spectra) == nrow(dplyr::distinct(spectra, spectra_id, wavelength))
   )
   invisible(spectra)
 }

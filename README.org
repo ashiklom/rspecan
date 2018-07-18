@@ -1,0 +1,51 @@
+#+TITLE: PROSPECT traits analysis
+#+AUTHOR: Alexey Shiklomanov
+
+* Introduction
+
+This repository contains code for processing data, performing analyses, and finalizing results of the PROSPECT trait analysis led by Alexey Shiklomanov.
+
+
+* Dataset organization
+
+Data for this project are stored in a database of files organized as follows:
+- The database root contains the following:
+  - Folders for each project, named according to `project_code`
+  - ~species.csvy~ -- Information about species
+  - ~instruments.yml~ -- Information about instruments
+  - ~traits.yml~ -- Information about traits and units
+- Each project folder contains the following:
+  - ~metadata.csvy~ -- Metadata about the spectra, which contains the following:
+    * A YAML header metadata (`*` indicates required data)
+    * CSV data with the following columns (again, `*` indicates required columns):
+  - ~spectra.fst~ -- Single, long spectra file, containing the following columns:
+    * ~observation_id~ -- ID for matching against the metadata. Each observation corresponds to observations made on a single leaf at a particular point in time, so each spectra within a file is treated as a single observation in the context of PROSPECT. A single observation may have multiple spectra (of different kinds!) associated with it.
+    * ~spectra_id~ -- ID matching each unique spectrum. Made as a combination of ~observation_id~, ~spectra_type~ (see below), and an additional integer indicating rep. 
+    * ~spectra_type~ -- Type of spectra. One of:
+      - `R` - Reflectance
+      - `T` - Transmittance
+      - `PA` - Pseudo-absorbance (log10(1/R))
+      - `CRR` - Continuum-removed reflectance
+    * ~wavelength~ -- Wavelength, in nanometers
+    * ~value~ -- Spectral value, on a 0-1 scale.
+ 
+The typical workflow for working with data is as follows (all functions found in ~rspecan~):
+
+1. Load metadata for a specific project (or vector of projects) with ~get_metadata~. If no argument is provided, load data for all projects.
+2. Use ~dplyr~ functions to subset this down to the observations of interest.
+3. Retrieve all the spectra for the corresponding dataset with ~get_spectra_from_metadata~.
+
+* Analysis workflow
+
+1. Prepare the inversion files with `scripts/01_prepare_inversion.R`
+2. Run the inversion for a single observation with `scripts/02_run_inversion.R`. Use the submit script created in (1) to run these in array mode on an SGE cluster
+3. Each result is stored in its own file, `results.csvy`. Create a list of all the results files with `find spectra_db -name results.csvy > results_files`.
+4. Combine the results into a single file with `scripts/load_results.R`. Note that this can take a while. This creates the `spectra_db/all_results.csv` file.
+5. Clean the results with `scripts/clean_results.R`. This removes unrealistic results and performs minor formatting revisions, and then stores the results in `spectra_db/cleaned_results.csv`.
+6. Generate figures using the following scripts (in no particular order) (* indicates scripts that only depend on metadata and not the results):
+   - `scripts/figures/data_map.R`* -- Map of the data
+   - `scripts/figures/data_climate.R`* -- Plots of the data locations in climate (precipitation and temperature space)
+   - `scripts/figures/project_table.R`* -- Table of projects and their descriptions and sample sizes
+   - `scripts/figures/prospect_version_agreement.R` -- Agreement in parameter estimates among PROSPECT versions
+   - `scripts/figures/validation.R` -- Agreement of PROSPECT estimates with observed traits
+

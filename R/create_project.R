@@ -9,6 +9,8 @@ create_project <- function(specdb,
                            spectra,
                            metadata,
                            overwrite = FALSE) {
+  spectra <- make_long_spectra(spectra)
+  
   check_metadata(metadata)
   check_spectra(spectra)
 
@@ -27,19 +29,13 @@ create_project <- function(specdb,
   }
 
   fs::dir_create(proj_path)
-  spectra_path <- fs::path(proj_path, "spectra")
-  fs::dir_create(spectra_path)
 
   assertthat::assert_that(
-    all(colnames(spectra) %in% metadata$observation_id)
+    all(unique(spectra$observation_id) %in% metadata$observation_id)
   )
 
   metar::write_csvy(metadata, filename = fs::path(proj_path, "metadata.csvy"))
-
-  spectra_list <- spectra2list(spectra, colnames(spectra))
-  spectra_names <- fs::path(spectra_path, names(spectra_list), ext = "csvy")
-
-  walk2(spectra_list, spectra_names, metar::write_csvy)
+  fst::write_fst(spectra, filename = fs::path(proj_path, "spectra.fst"))
 
   invisible(TRUE)
 }

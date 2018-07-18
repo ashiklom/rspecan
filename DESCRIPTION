@@ -18,7 +18,8 @@ Imports:
     metar,
     progress,
     here,
-    cowplot
+    cowplot,
+    fst
 Suggests:
     testthat,
     import,
