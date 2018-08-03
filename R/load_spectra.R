@@ -105,7 +105,7 @@ add_spectra_column <- function(data, specdb, ...) {
       spectra = purrr::map2(
         project_code,
         observation_id,
-        load_spectra,
+        purrr::possibly(load_spectra, NULL),
         specdb = specdb,
         pb = pb,
         ...
@@ -120,6 +120,13 @@ add_spectra_column <- function(data, specdb, ...) {
 #' @return Single [PEcAnRTM::spectra] object containing all spectra in `data`
 #' @export
 pull_spectra <- function(data, spectra_col = "spectra") {
+  spec_data <- data[[spectra_col]]
+  missing_spectra <- purrr::map_lgl(spec_data, is.null)
+  n_missing <- sum(missing_spectra)
+  if (n_missing > 0) {
+    warning("Dropping ", n_missing, " missing spectra.")
+    data <- dplyr::filter(data, !missing_spectra)
+  }
   data %>%
     dplyr::pull(!!spectra_col) %>%
     do.call(cbind, .)
