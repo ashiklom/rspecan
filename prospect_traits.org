@@ -23,76 +23,76 @@
 Wang, Z., Skidmore, A. K., Darvishzadeh, R., Heiden, U., Heurich, M., & Wang, T., Leaf nitrogen content indirectly estimated by leaf traits derived from the prospect model, IEEE Journal of Selected Topics in Applied Earth Observations and Remote Sensing, 8(6), 3172–3182 (2015).  http://dx.doi.org/10.1109/jstars.2015.2422734 
 
 #+BEGIN_SRC R 
-  import::from(drake, drake_plan, drake_config, make)
-  import::from(magrittr, "%>%")
+import::from(drake, drake_plan, drake_config, make)
+import::from(magrittr, "%>%")
 
-  pkgconfig::set_config("drake::strings_in_dots" = "literals")
+pkgconfig::set_config("drake::strings_in_dots" = "literals")
 
-  read_raw_data <- function(file, ...) {
-    import::from(readxl, read_excel, .into = "")
-    import::from(dplyr, mutate, select, everything, .into = "")
+read_raw_data <- function(file, ...) {
+  import::from(readxl, read_excel, .into = "")
+  import::from(dplyr, mutate, select, everything, .into = "")
 
-    read_excel(file, ...) %>%
-      mutate(observation_id = sprintf("zwang_%02d", sample_id)) %>%
-      select(observation_id, everything(), -sample_id)
-  }
+  read_excel(file, ...) %>%
+    mutate(observation_id = sprintf("zwang_%02d", sample_id)) %>%
+    select(observation_id, everything(), -sample_id)
+}
 
-  extract_metadata <- function(dat, project_metadata) {
-    import::from(dplyr, select, matches, transmute, .into = "")
-    import::from(metar, add_column_metadata, add_metadata)
-    dat %>%
-      select(-matches("^[[:digit:]]+$")) %>%
-      transmute(
-        observation_id = observation_id,
-        species_data_code = `Latin_name`,
-        leaf_N_per_area = `N_area, g/cm2`,
-        leaf_water_thickness = `Cw, g/cm2`,
-        leaf_mass_per_area = `Cm, g/cm2`,
-        leaf_chltot_per_area = `Cab, ug/cm2`
-      ) %>%
-      add_column_metadata(
-        leaf_N_per_area = list(data_unit = "g cm-2"),
-        leaf_water_thickness = list(data_unit = "g cm-2"),
-        leaf_mass_per_area = list(data_unit = "g cm-2"),
-        leaf_chltot_per_area = list(data_unit = "ug cm-2")
-      ) %>%
-      add_metadata(!!!project_metadata)
-  }
+extract_metadata <- function(dat, project_metadata) {
+  import::from(dplyr, select, matches, transmute, .into = "")
+  import::from(metar, add_column_metadata, add_metadata)
+  dat %>%
+    select(-matches("^[[:digit:]]+$")) %>%
+    transmute(
+      observation_id = observation_id,
+      species_data_code = `Latin_name`,
+      leaf_N_per_area = `N_area, g/cm2`,
+      leaf_water_thickness = `Cw, g/cm2`,
+      leaf_mass_per_area = `Cm, g/cm2`,
+      leaf_chltot_per_area = `Cab, ug/cm2`
+    ) %>%
+    add_column_metadata(
+      leaf_N_per_area = list(data_unit = "g cm-2"),
+      leaf_water_thickness = list(data_unit = "g cm-2"),
+      leaf_mass_per_area = list(data_unit = "g cm-2"),
+      leaf_chltot_per_area = list(data_unit = "ug cm-2")
+    ) %>%
+    add_metadata(!!!project_metadata)
+}
 
-  extract_spectra <- function(dat, spectra_type) {
-    import::from(dplyr, select, matches, mutate, .into = "")
-    import::from(tidyr, gather, .into = "")
+extract_spectra <- function(dat, spectra_type) {
+  import::from(dplyr, select, matches, mutate, .into = "")
+  import::from(tidyr, gather, .into = "")
 
-    dat %>%
-      select(observation_id, matches("^[[:digit:]]+$")) %>%
-      gather(wavelength, value, -observation_id, na.rm = TRUE) %>%
-      mutate(
-        wavelength = as.numeric(wavelength),
-        spectra_type = !!spectra_type,
-        spectra_id = paste(observation_id, spectra_type, sep = "__")
-      )
-  }
+  dat %>%
+    select(observation_id, matches("^[[:digit:]]+$")) %>%
+    gather(wavelength, value, -observation_id, na.rm = TRUE) %>%
+    mutate(
+      wavelength = as.numeric(wavelength),
+      spectra_type = !!spectra_type,
+      spectra_id = paste(observation_id, spectra_type, sep = "__")
+    )
+}
 
-  zwang_plan <- drake_plan(
-    project_metadata = list(
-      project_code = "zwang",
-      short_name = "Wang et al. 2015",
-      long_name = "Wang et al. 2015 Leaf Nitrogen Content Indirectly Estimated By Leaf
+zwang_plan <- drake_plan(
+  project_metadata = list(
+    project_code = "zwang",
+    short_name = "Wang et al. 2015",
+    long_name = "Wang et al. 2015 Leaf Nitrogen Content Indirectly Estimated By Leaf
                     Traits Derived From the Prospect Model",
-      URL = "https://doi.org/10.1109/jstars.2015.2422734",
-      site_description = "Bavarian Forest National Park, Germany"
-    ),
-    raw_data_file = file_in("raw_data/zhihui_wang_protein/Bavaria_dataset_ZW.xlsx"),
-    raw_refl = read_raw_data(raw_data_file, sheet = 1),
-    raw_trans = read_raw_data(raw_data_file, sheet = 2),
-    metadata = extract_metadata(raw_refl, project_metadata),
-    refl_spectra = extract_spectra(raw_refl, "R"),
-    trans_spectra = extract_spectra(raw_trans, "T"),
-    all_spectra = dplyr::bind_rows(refl_spectra, trans_spectra)
-  )
+    URL = "https://doi.org/10.1109/jstars.2015.2422734",
+    site_description = "Bavarian Forest National Park, Germany"
+  ),
+  raw_data_file = file_in("raw_data/zhihui_wang_protein/Bavaria_dataset_ZW.xlsx"),
+  raw_refl = read_raw_data(raw_data_file, sheet = 1),
+  raw_trans = read_raw_data(raw_data_file, sheet = 2),
+  metadata = extract_metadata(raw_refl, project_metadata),
+  refl_spectra = extract_spectra(raw_refl, "R"),
+  trans_spectra = extract_spectra(raw_trans, "T"),
+  all_spectra = dplyr::bind_rows(refl_spectra, trans_spectra)
+)
 
-  zwang_plan_config <- drake_config(zwang_plan)
-  make(zwang_plan)
+zwang_plan_config <- drake_config(zwang_plan)
+make(zwang_plan)
 #+END_SRC
 
 ** ECOSTRESS
@@ -102,10 +102,13 @@ Wang, Z., Skidmore, A. K., Darvishzadeh, R., Heiden, U., Heurich, M., & Wang, T.
 
 #+NAME: setup
 #+BEGIN_SRC R :results none
-import::from(drake, drake_plan, drake_config, make, loadd)
+import::from(drake, drake_plan, drake_config, make, loadd, new_cache)
 import::from(magrittr, "%>%")
 pkgconfig::set_config("drake::strings_in_dots" = "literals")
 options(crayon.enabled = FALSE)
+
+dir.create(".process_caches", showWarnings = FALSE)
+cache <- new_cache(".process_caches/ecostress")
 #+END_SRC
 
 ECOSTRESS data are stored in plain text files, with one spectrum per file.
@@ -139,6 +142,10 @@ read_raw_metadata <- function(filename) {
 }
 #+END_SRC
 
+#+RESULTS: read spectra metadata functions
+:RESULTS:
+:END:
+
 The ~Origin~ column contains geographic information in the format ~latitude; longitude; CRS~.
 The ~parse_origin~ function separates this into the corresponding columns.
 
@@ -159,6 +166,10 @@ parse_origin <- function(origin_string) {
   )
 }
 #+END_SRC
+
+#+RESULTS:
+:RESULTS:
+:END:
 
 This function reads the actual spectra data, which are tab-separated and start on the line given by ~nskip~ (returned as part of the output of ~read_spectra_metadata~).
 The output here is a long data frame suitable for ~fst~ storage.
@@ -184,6 +195,10 @@ read_spectra_data <- function(spectra_metadata) {
 }
 #+END_SRC
 
+#+RESULTS: read spectra data function
+:RESULTS:
+:END:
+
 This function reads the additional metadata files that come with each spectrum.
 
 #+BEGIN_SRC R
@@ -208,8 +223,8 @@ plan <- drake_plan(
   ancillary_files = list.files(raw_data_dir, "vegetation\\..*\\.ancillary.txt")
 )
 
-plan_config <- drake_config(plan)
-make(plan)
+plan_config <- drake_config(plan, cache = cache)
+make(plan, cache = cache)
 #+END_SRC
 
 ** ACCP
