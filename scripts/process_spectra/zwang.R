@@ -1,6 +1,7 @@
 ## Zhihui Wang data
 ## :PROPERTIES:
-## :header-args: :comments both
+## :header-args: :comments both :tangle scripts/process_spectra/zwang.R
+## :header-args: :results silent
 ## :Bibtex: cite:wang_2015_leaf 
 ## :END:
 
@@ -63,7 +64,7 @@ zwang_plan <- drake_plan(
     project_code = "zwang",
     short_name = "Wang et al. 2015",
     long_name = "Wang et al. 2015 Leaf Nitrogen Content Indirectly Estimated By Leaf
-                  Traits Derived From the Prospect Model",
+                    Traits Derived From the Prospect Model",
     URL = "https://doi.org/10.1109/jstars.2015.2422734",
     site_description = "Bavarian Forest National Park, Germany"
   ),
