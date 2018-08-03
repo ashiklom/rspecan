@@ -6,10 +6,12 @@
 ## #+NAME: setup
 
 ## [[file:~/Projects/prospect-traits/rspecan/prospect_traits.org::setup][setup]]
-import::from(drake, drake_plan, drake_config, make, loadd)
+import::from(drake, drake_plan, drake_config, make, loadd, new_cache)
 import::from(magrittr, "%>%")
 pkgconfig::set_config("drake::strings_in_dots" = "literals")
-options(crayon.enabled = FALSE)
+
+dir.create(".process_caches", showWarnings = FALSE)
+cache <- new_cache(".process_caches/ecostress")
 ## setup ends here
 
 
@@ -17,9 +19,11 @@ options(crayon.enabled = FALSE)
 ## ECOSTRESS data are stored in plain text files, with one spectrum per file.
 ## In each spectrum file, the first 20 lines are metadata, followed by a blank line, and then the data themselves, in the form "wavelength <tab> reflectance".
 
-## #+NAME: read_spectra
+## This first set of functions parses out the metadata from each spectra file.
 
-## [[file:~/Projects/prospect-traits/rspecan/prospect_traits.org::read_spectra][read_spectra]]
+## #+NAME: read spectra metadata functions
+
+## [[file:~/Projects/prospect-traits/rspecan/prospect_traits.org::read%20spectra%20metadata%20functions][read spectra metadata functions]]
 read_raw_metadata <- function(filename) {
   raw_meta_full <- readLines(filename, n = 100)
   end_metadata <- grep("^[[:space:]]*$", raw_meta_full)
@@ -42,7 +46,19 @@ read_raw_metadata <- function(filename) {
 
   meta_tbl
 }
+## read spectra metadata functions ends here
 
+
+
+## #+RESULTS: read spectra metadata functions
+## :RESULTS:
+## :END:
+
+## The ~Origin~ column contains geographic information in the format ~latitude; longitude; CRS~.
+## The ~parse_origin~ function separates this into the corresponding columns.
+
+
+## [[file:~/Projects/prospect-traits/rspecan/prospect_traits.org::*ECOSTRESS][ECOSTRESS:3]]
 parse_origin <- function(origin_string) {
   coord_list <- stringr::str_split(origin_string, ";")
   if (length(coord_list[[1]]) != 3) {
@@ -58,7 +74,20 @@ parse_origin <- function(origin_string) {
     CRS = purrr::map_chr(coord_list, 3) %>% stringr::str_trim()
   )
 }
+## ECOSTRESS:3 ends here
 
+
+
+## #+RESULTS:
+## :RESULTS:
+## :END:
+
+## This function reads the actual spectra data, which are tab-separated and start on the line given by ~nskip~ (returned as part of the output of ~read_spectra_metadata~).
+## The output here is a long data frame suitable for ~fst~ storage.
+
+## #+NAME: read spectra data function
+
+## [[file:~/Projects/prospect-traits/rspecan/prospect_traits.org::read%20spectra%20data%20function][read spectra data function]]
 read_spectra_data <- function(spectra_metadata) {
   spec_sub <- spectra_metadata %>%
     dplyr::select(filename, nskip, spectra_id, Measurement)
@@ -73,10 +102,32 @@ read_spectra_data <- function(spectra_metadata) {
       )
     )
 
-  tidyr::unnest(spec_nest) %>%
-    dplyr::select(spectra_id, spectra_type = Measurement, wavelength, value)
+  spec_nest %>%
+    tidyr::unnest() %>%
+    dplyr::select(spectra_id, spectra_type = Measurement, wavelength, value) %>%
+    dplyr::mutate(value = value / 100)
 }
+## read spectra data function ends here
 
+
+
+## #+RESULTS: read spectra data function
+## :RESULTS:
+## :END:
+
+## This function reads the additional metadata files that come with each spectrum.
+
+
+## [[file:~/Projects/prospect-traits/rspecan/prospect_traits.org::*ECOSTRESS][ECOSTRESS:5]]
+## ECOSTRESS:5 ends here
+
+
+
+## Finally, the ~drake~ plan for processing the data.
+
+## #+NAME: drake plan
+
+## [[file:~/Projects/prospect-traits/rspecan/prospect_traits.org::drake%20plan][drake plan]]
 plan <- drake_plan(
   raw_data_dir = "raw_data/ECOSTRESS/vegetation",
   spectra_files = list.files(raw_data_dir, "vegetation\\..*\\.spectrum.txt"),
@@ -87,42 +138,13 @@ plan <- drake_plan(
       coords = suppressWarnings(purrr::map(Origin, parse_origin))
     ) %>%
     tidyr::unnest(coords),
-  spectra_data = read_spectra_data(spectra_metadata)
+  spectra_data = read_spectra_data(spectra_metadata),
+  ancillary_files = list.files(raw_data_dir, "vegetation\\..*\\.ancillary.txt")
 )
 
-plan_config <- drake_config(plan)
-make(plan)
-## read_spectra ends here
+plan_config <- drake_config(plan, cache = cache)
+make(plan, cache = cache)
+## drake plan ends here
 
-
-
-## #+RESULTS: read_spectra
-## :RESULTS:
-
-## target spectra_data
-## Warning: target spectra_data warnings:
-##   number of columns of result is not a multiple of vector length (arg 1)
-##   16 parsing failures.
-## row # A tibble: 5 x 5 col     row col   expected  actual   file                                           expected   <int> <chr> <chr>     <chr>    <chr>                                          actual 1     1 <NA>  2 columns 4 colum… 'raw_data/ECOSTRESS/vegetation/vegetation.gra… file 2     2 <NA>  2 columns 4 colum… 'raw_data/ECOSTRESS/vegetation/vegetation.gra… row 3     3 <NA>  2 columns 4 colum… 'raw_data/ECOSTRESS/vegetation/vegetation.gra… col 4     4 <NA>  2 columns 4 colum… 'raw_data/ECOSTRESS/vegetation/vegetation.gra… expected 5     5 <NA>  2 columns 4 colum… 'raw_data/ECOSTRESS/vegetation/vegetation.gra…
-
-## ... ............................................................................... ........ ............................................................................... ...... ............................ [... truncated]
-## Warning messages:
-## 1: In rbind(names(probs), probs_f) :
-##   number of columns of result is not a multiple of vector length (arg 1)
-## 2: In rbind(names(probs), probs_f) :
-##   number of columns of result is not a multiple of vector length (arg 1)
-## 3: In rbind(names(probs), probs_f) :
-##   number of columns of result is not a multiple of vector length (arg 1)
-## :END:
-
-
-## [[file:~/Projects/prospect-traits/rspecan/prospect_traits.org::*ECOSTRESS][ECOSTRESS:3]]
-loadd(spectra_metadata)
-
-filename <- spectra_files_full[1]
-
-spectra_metadata <- purrr::map_dfr(
-  spectra_files_full,
-  read_spectra_metadata
-)
-## ECOSTRESS:3 ends here
+loadd(cache = cache)
+spectra_metadata
