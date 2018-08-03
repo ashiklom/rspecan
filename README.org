@@ -1,39 +1,146 @@
 #+TITLE: PROSPECT traits analysis
 #+AUTHOR: Alexey Shiklomanov
 
-* Introduction
-
-This repository contains code for processing data, performing analyses, and finalizing results of the PROSPECT trait analysis led by Alexey Shiklomanov.
-
-
 * Dataset organization
+
+** Overview
 
 Data for this project are stored in a database of files organized as follows:
 - The database root contains the following:
   - Folders for each project, named according to `project_code`
   - ~species.csvy~ -- Information about species
-  - ~instruments.yml~ -- Information about instruments
-  - ~traits.yml~ -- Information about traits and units
+  - ~instruments.csv~ -- Information about instruments
+  - ~traits.csv~ -- Information about traits and their units
 - Each project folder contains the following:
-  - ~metadata.csvy~ -- Metadata about the spectra, which contains the following:
-    * A YAML header metadata (`*` indicates required data)
-    * CSV data with the following columns (again, `*` indicates required columns):
-  - ~spectra.fst~ -- Single, long spectra file, containing the following columns:
-    * ~observation_id~ -- ID for matching against the metadata. Each observation corresponds to observations made on a single leaf at a particular point in time, so each spectra within a file is treated as a single observation in the context of PROSPECT. A single observation may have multiple spectra (of different kinds!) associated with it.
-    * ~spectra_id~ -- ID matching each unique spectrum. Made as a combination of ~observation_id~, ~spectra_type~ (see below), and an additional integer indicating rep. 
-    * ~spectra_type~ -- Type of spectra. One of:
-      - `R` - Reflectance
-      - `T` - Transmittance
-      - `PA` - Pseudo-absorbance (log10(1/R))
-      - `CRR` - Continuum-removed reflectance
-    * ~wavelength~ -- Wavelength, in nanometers
-    * ~value~ -- Spectral value, on a 0-1 scale.
+  - ~metadata.csvy~ -- Metadata about the spectra, in CSVY format (CSV file, with a YAML header). See below for full description.
+  - ~spectra.fst~ -- Spectral data, in long format (each row is a wavelength x observation). See below for full description.
+
+** Metadata header
+:PROPERTIES:
+:TABLE_EXPORT_FILE: spectra_db/metadata_header.csv
+:TABLE_EXPORT_FORMAT: orgtbl-to-csv
+:END:
+#+CAPTION: Metadata YAML header descriptions
+#+NAME: metadata_header
+| tag          | description               | required |
+|--------------+---------------------------+----------|
+|              | <25>                      |          |
+| project_code | Unique identifier of the project, for use in code <<project_code>> | yes      |
+| short_name   | Short project title, for use in plots and tables | yes      |
+| long_name    | Full project title        | yes      |
+| resources    | CSV file schema           | yes      |
+| URL          | URL where raw data can be accessed | no       |
+
+** Metadata columns
+:PROPERTIES:
+:TABLE_EXPORT_FILE: spectra_db/metadata_columns.csv
+:TABLE_EXPORT_FORMAT: orgtbl-to-csv
+:END:
+#+CAPTION: Metadata column descriptions
+#+NAME: metadata_colums
+| column             | type      | description               | required |
+|--------------------+-----------+---------------------------+----------|
+|                    |           | <25>                      |          |
+| project_code       | character | Same as above             | yes      |
+| observation_id     | character | ID for matching against the metadata. Each observation corresponds to observations made on a single leaf at a particular point in time, so each spectra within a file is treated as a single observation in the context of PROSPECT. A single observation may have multiple spectra (of different kinds!) associated with it. <<observation_id>> | yes      |
+| latitude           | numeric   | Coordinates of measurement location. In some projects, this is identical for all observations within the project. In other projects, this is plot-specific. <<coordinates>> | yes      |
+| longitude          | numeric   | ^^                        | yes      |
+| site_code          | character | String identifying a site. Because different projects may use different site codes to refer to the same location, using [[coordinates]] is preferable. | no       |
+| plot_code          | character | String identifying a plot within a site. Each plot will only have one site, but one site may have multiple plots. | no       |
+| species_code       | character | Unique species identifier (character). For species that are in the USDA plants database, this uses the corresponding USDA code. Other species may have codes from other sources (see ~species_code_type~) | yes      |
+| species_code_type  | factor    | The type of code used to identify each species. One of the following: ~USDA Plants~ -- The USDA NRCS Plants database ([[https://plants.usda.gov/java/]]); ... | yes      |
+| instrument_code    | character | Character identifier of instrument with which measurement was performed. One of the following: | yes      |
+| apparatus          | factor    | Measurement apparatus. One of: "leaf clip", "integrating sphere" | yes      |
+| measurement_method | factor    | "Contact" or "proximal"   | yes      |
+| collection_date    | date      | Date measurement was performed | no       |
+| is_control         | logical   | Whether or not the observation is from a "control" leaf or plant (as opposed to one that has been subject to experimental manipulation) | no       |
+| target_type        | factor    | Whether the target        | yes      |
+| leaf_age           | factor    |                           | no       |
+
+** Trait table
+:PROPERTIES:
+:TABLE_EXPORT_FILE: spectra_db/traits.csv
+:TABLE_EXPORT_FORMAT: orgtbl-to-csv
+:END:
  
+#+CAPTION: Trait descriptions
+#+NAME: trait_descriptions
+| trait                   | description          | unit    | SI_unit | min | max |
+|-------------------------+----------------------+---------+---------+-----+-----|
+|                         | <20>                 |         |         |     |     |
+| leaf_chla_per_area      | Leaf chlorophyll a content per leaf area | ug cm-2 | kg m-2  |   0 |     |
+| leaf_chlb_per_area      | Leaf chlorophyll b content per leaf area | ug cm-2 | kg m-2  |   0 |     |
+| leaf_chltot_per_area    | Total leaf chlorophyll content (a and b) per leaf area | ug cm-2 | kg m-2  |   0 |     |
+| leaf_cartot_per_area    | Total leaf carotenoid conent per leaf area | ug cm-2 | kg m-2  |   0 |     |
+| leaf_anth_per_area      | Total leaf anthocyanin content per leaf area | ug cm-2 | kg m-2  |   0 |     |
+| leaf_mass_per_area      | Leaf dry mass per leaf area | g cm-2  | kg m-2  |   0 |     |
+| leaf_water_thickness    | Leaf equivalent water thickness, or leaf water content per leaf area | g cm-2  | kg m-2  |   0 |     |
+| leaf_CN_ratio           | Leaf carbon to nitrogen ratio |         |         |   0 |     |
+| leaf_protein_pct_mass   | Percent leaf dry mass in protein | %       |         |   0 | 100 |
+| leaf_cellulose_pct_mass | Percent leaf dry mass in cellulose | %       |         |   0 | 100 |
+| leaf_lignin_pct_mass    | Percent leaf dry mass in lignin | %       |         |   0 | 100 |
+| leaf_starch_pct_mass    | Percent leaf dry mass in starch | %       |         |   0 | 100 |
+| leaf_C_pct_mass         | Percent leaf dry mass in carbon | %       |         |   0 | 100 |
+| leaf_H_pct_mass         | Percent leaf dry mass in hydrogen | %       |         |   0 | 100 |
+| leaf_O_pct_mass         | Percent leaf dry mass in oxygen | %       |         |   0 | 100 |
+| leaf_N_pct_mass         | Percent leaf dry mass in nitrogen | %       |         |   0 | 100 |
+| leaf_N_per_area         | Leaf nitrogen per leaf area | g m-2   | kg m-2  |   0 |     |
+| leaf_C_per_area         | Leaf carbon per leaf area | g m-2   | kg m-2  |   0 |     |
+| leaf_prospect_N         | Effective number of leaf mesophyll layers, or 1 less than the number of leaf intracellular air spaces. |         |         |   1 |     |
+| leaf_water_potential    | Leaf water potential | Pa      | Pa      |     |     |
+| leaf_water_pct_mass     | Percentage of leaf fresh mass in water | %       |         |   0 | 100 |
+| leaf_area               | Leaf area            | cm2     | m2      |     |     |
+
+** Instrument table
+:PROPERTIES:
+:TABLE_EXPORT_FILE: spectra_db/instruments.csv
+:TABLE_EXPORT_FORMAT: orgtbl-to-csv
+:END:
+
+#+CAPTION: Instrument descriptions
+#+NAME: instrument_descriptions
+| instrument_code  | instrument_name | manufacturer | min_wave | max_wave | comment    |
+|------------------+------------+------------+----------+----------+------------|
+|                  | <10>       | <10>       |          |          | <10>       |
+| asd-fspro        | ASD FieldSpec Pro | ASD        |      350 |     2500 | 1.4nm visible; 2.2nm NIR; 2.3nm SWIR; interpolated to 1nm; Analytical Spectra Devices, Boulder, CO, USA |
+| asd-fs3          | ASD FieldSpec 3 | ASD        |      350 |     2500 | 3nm at 700nm, 10nm at 1400nm, 2100nm across full spectrum [sic]. Resampled at 1nm. |
+| asd-fs4          | ASD FieldSpec 4 | ASD        |          |          |            |
+| asd-fs           | ASD FieldSpec | ASD        |          |          |            |
+| se-psm3500       | Spectral Evolution PSM-3500 | Spectral Evolution |          |          |            |
+| perkin-elmer-l19 | Perkin Elmer Lambda 19 | Perkin Elmer |          |          | Double beam spectrophotometer, BaSO4 integrating sphere |
+| nirs-6500        | NIRS 6500 laboratory spectrometer | NIRS       |          |          |            |
+| accp-spec        | ACCP field spectrometer (unknown model) |            |          |          |            |
+| svc-hr           | SVC_HR-1024i | SVC        |          |          |            |
+| unknown          | Unknown    |            |          |          |            |
+| oo-2000          | Ocean Optics USB2000 | Ocean Optics |          |          |            |
+
+** Spectra data format
+:PROPERTIES:
+:TABLE_EXPORT_FILE: spectra_db/spectra_format.csv
+:TABLE_EXPORT_FORMAT: orgtbl-to-csv
+:END:
+
+#+CAPTION: Spectra data column descriptions
+#+NAME: spectra_data
+| column         | type      | description                              |
+|----------------+-----------+------------------------------------------|
+|                |           | <40>                                     |
+| observation_id | character | Same as in "Metadata columns"            |
+| spectra_id     | character | ID matching each unique spectrum. Made as a combination of ~observation_id~ ~spectra_type~, and an additional integer indicating rep. |
+| spectra_type   | factor    | Type of spectra. One of the following: "R" - reflectance; "T" - transmittance; "PA" - pseudo-absorbance (log10(1/R)); "CRR" - Continuum-removed reflectance |
+| wavelength     | numeric   | Measurement wavelength, in nanometers    |
+| value          | numeric   | Spectra value, as a fraction (i.e. 0-1)  |
+
+** Typical workflow
 The typical workflow for working with data is as follows (all functions found in ~rspecan~):
 
 1. Load metadata for a specific project (or vector of projects) with ~get_metadata~. If no argument is provided, load data for all projects.
 2. Use ~dplyr~ functions to subset this down to the observations of interest.
 3. Retrieve all the spectra for the corresponding dataset with ~get_spectra_from_metadata~.
+
+* Introduction
+
+This repository contains code for processing data, performing analyses, and finalizing results of the PROSPECT trait analysis led by Alexey Shiklomanov.
 
 * Analysis workflow
 
