@@ -13,3 +13,4 @@ manuscript/_bookdown_files
 manuscript/figures
 **/*.html
 /.drake
+/.process_caches
